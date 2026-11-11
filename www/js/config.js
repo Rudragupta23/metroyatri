@@ -4,7 +4,7 @@ window.APP_CONFIG = {
      Paste the Web API key of your own Firebase project here to switch on email-verified accounts
      (Firebase console > Project settings > General > Web API key; enable Authentication > Email/Password).
      Leave it empty and accounts are kept on the phone only, without verification. */
-  firebaseApiKey: '',
+  firebaseApiKey: 'AIzaSyDQtStquJSzrFumLaRzidqs5tHViz4ZOu0',
 
   /* Street map shown behind the metro lines (needs internet). {s} {z} {x} {y} {r} are filled in by the map. */
   tiles: {
