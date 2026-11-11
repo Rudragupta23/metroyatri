@@ -26,6 +26,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Add the Firebase key from repository secrets
+        env:
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+        run: node tools/make-secrets.js
+
       - name: Copy the app into the Android project
         run: npx cap sync android
 

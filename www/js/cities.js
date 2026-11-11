@@ -34,6 +34,14 @@ window.CITIES = {
       ['What is not included', 'Noida Aqua Line, Rapid Metro Gurugram and Namo Bharat trains have separate tickets and are not included. Sections still being built (Golden Line, Krishna Park Extension to Deepali Chowk, Soorghat station) are added in app updates once they open.'],
       ['Where the data comes from', 'Track distances and train running times come from the DMRC open transit data feed. Newer sections use the published corridor length, and their map positions are approximate. Fares use the DMRC distance bands of 25 August 2025.']
     ],
+    tips: [
+      'Fares are lower on Sundays and national holidays. The app switches to them by itself on Sundays.',
+      'A smart card saves 10% on every journey, and 20% outside rush hours.',
+      'On the Blue Line, check the board: trains go to either Noida Electronic City or Vaishali.',
+      'The Pink Line is a ring. Either direction reaches your station, so take the shorter way round.',
+      'Carrying luggage? Choose Fewest changes to avoid long walks between platforms.',
+      'The Airport Express reaches Terminal 3 from New Delhi in about 20 minutes, at a higher fare.'
+    ],
     places: [
       ['Red Fort (Lal Qila)', 'Lal Qila'], ['Jama Masjid', 'Jama Masjid'], ['Chandni Chowk market', 'Chandni Chowk'],
       ['India Gate and Kartavya Path', 'Central Secretariat'], ['Rashtrapati Bhavan', 'Central Secretariat'],
@@ -78,6 +86,13 @@ window.CITIES = {
       ['What is included', '51 stations on the Blue Line (Wimco Nagar Depot to Airport), the Green Line (Chennai Central to St. Thomas Mount) and the Yellow Line section from Poonamallee Bypass to Vadapalani that opened on 11 October 2026.'],
       ['What is not included', 'Chennai MRTS and suburban trains have separate tickets and are not included. Yellow Line stations between Porur Junction and Vadapalani, and the rest of Phase 2, are added in app updates once they open.'],
       ['Where the data comes from', 'CMRL does not publish an open data feed, so station positions were entered by hand and are approximate. Distances are scaled to each line\'s official length, and journey times assume an average speed of 34 km/h.']
+    ],
+    tips: [
+      'Singara Chennai card and mobile QR tickets are 20% cheaper than paper tickets.',
+      'Chennai Central and Alandur are where the Blue and Green lines meet.',
+      'For the Yellow Line to Poonamallee, change at Vadapalani on the Green Line.',
+      'Some Green Line trains continue to the Airport, so check the board at Alandur before changing.',
+      'Carrying luggage? Choose Fewest changes to avoid long walks between platforms.'
     ],
     places: [
       ['Chennai Central railway station', 'Chennai Central'], ['Egmore railway station and Government Museum', 'Egmore'],

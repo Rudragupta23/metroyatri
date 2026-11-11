@@ -45,13 +45,18 @@
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
   MetroMap.prototype.setTiles = function (on) {
-    var cfg = (window.APP_CONFIG || {}).tiles, dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    var cfg = (window.APP_CONFIG || {}).tiles, self = this;
     if (this.tileLayer) { this.map.removeLayer(this.tileLayer); this.tileLayer = null; }
     this.host.classList.toggle('plain', !on);
-    if (on && cfg) {
-      this.tileLayer = L.tileLayer(dark ? cfg.dark : cfg.light, { attribution: cfg.credit, maxZoom: 19, subdomains: 'abcd', detectRetina: false }).addTo(this.map);
-      this.tileLayer.bringToBack();
-    }
+    if (!on || !cfg || !cfg.url) return;
+    var ok = 0, bad = 0, told = false;
+    this.tileLayer = L.tileLayer(cfg.url, { attribution: cfg.credit, maxZoom: 19, maxNativeZoom: cfg.maxZoom || 19, subdomains: cfg.subdomains || 'abc', referrerPolicy: 'origin' }).addTo(this.map);
+    this.tileLayer.on('tileload', function () { ok++; });
+    this.tileLayer.on('tileerror', function () {
+      bad++;
+      if (!told && !ok && bad >= 6 && self.opts.onTilesFailed) { told = true; self.opts.onTilesFailed(navigator.onLine === false); }
+    });
+    this.tileLayer.bringToBack();
   };
 
   MetroMap.prototype.restyle = function () {

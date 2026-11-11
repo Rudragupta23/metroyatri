@@ -1,7 +1,6 @@
-@font-face{font-family:Mukta;font-weight:400;font-display:swap;src:url(../fonts/mukta-latin-400-normal.woff2) format("woff2")}
-@font-face{font-family:Mukta;font-weight:500;font-display:swap;src:url(../fonts/mukta-latin-500-normal.woff2) format("woff2")}
-@font-face{font-family:Mukta;font-weight:600;font-display:swap;src:url(../fonts/mukta-latin-600-normal.woff2) format("woff2")}
-@font-face{font-family:Mukta;font-weight:700;font-display:swap;src:url(../fonts/mukta-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:Roboto;font-weight:400;font-display:swap;src:local("Roboto"),url(../fonts/roboto-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:Roboto;font-weight:500;font-display:swap;src:local("Roboto Medium"),url(../fonts/roboto-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:Roboto;font-weight:700;font-display:swap;src:local("Roboto Bold"),url(../fonts/roboto-latin-700-normal.woff2) format("woff2")}
 
 :root{
   --paper:#EEF1F5; --card:#FFFFFF; --ink:#171A21; --soft:#596170; --rule:#D9DEE6; --sunk:#E4E8EE;
@@ -16,7 +15,7 @@
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;margin:0}
-body{font-family:Mukta,"Noto Sans",system-ui,sans-serif;font-size:16px;line-height:1.4;color:var(--ink);background:var(--paper);overscroll-behavior:none;-webkit-user-select:none;user-select:none}
+body{font-family:Roboto,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.45;color:var(--ink);background:var(--paper);overscroll-behavior:none;-webkit-user-select:none;user-select:none}
 input,button,select{font:inherit;color:inherit}
 button{cursor:pointer;border:0;background:none;padding:0}
 a{color:inherit}
@@ -231,3 +230,105 @@ img.avatar.xl{display:block}
 .item button.x{width:40px;height:40px;border-radius:10px;background:var(--sunk);display:grid;place-items:center;flex:none}
 .item button.x svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
 .btn[disabled]{opacity:.5}
+
+/* v1.2: Plan screen */
+.netcard{display:block;position:relative;margin-top:14px;height:178px;border-radius:18px;background:var(--card);overflow:hidden;text-decoration:none}
+.netcard svg{position:absolute;right:-6%;top:6%;width:74%;height:88%}
+.netcard svg .ix circle{fill:var(--card);stroke:var(--ink)}
+.netcard::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--card) 26%,transparent 62%)}
+.netcard .stats{position:absolute;left:16px;top:14px;z-index:1;display:grid;gap:7px}
+.netcard .stats div{font-size:13px;color:var(--soft);line-height:1.1}
+.netcard .stats b{display:block;font-size:25px;font-weight:700;color:var(--ink);letter-spacing:-.01em}
+.netcard .open{position:absolute;right:12px;bottom:10px;z-index:1;font-size:13.5px;font-weight:700;background:var(--ink);color:var(--paper);padding:5px 12px;border-radius:999px}
+.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.qtile{background:var(--card);border-radius:16px;padding:13px 14px;text-align:left;text-decoration:none;display:block;min-height:96px}
+.qtile svg{width:26px;height:26px;fill:none;stroke:var(--ink);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;background:var(--signal);border-radius:9px;padding:6px;box-sizing:content-box;stroke:#171A21}
+.qtile b{display:block;font-size:16.5px;font-weight:700;margin-top:8px;line-height:1.2}
+.qtile small{display:block;font-size:13px;color:var(--soft);line-height:1.25}
+.hscroll{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px 2px;scroll-snap-type:x proximity;scroll-padding-left:16px}
+.hscroll::-webkit-scrollbar{display:none}
+.linecard{flex:none;width:168px;text-align:left;border-radius:16px;padding:12px 14px;background:var(--c);color:var(--ct);scroll-snap-align:start;min-height:104px;display:flex;flex-direction:column}
+.linecard b{font-size:17.5px;font-weight:700;line-height:1.15}
+.linecard small{font-size:13px;font-weight:600;opacity:.9}
+.linecard span{font-size:12.5px;line-height:1.25;margin-top:auto;opacity:.92}
+.placecard{flex:none;width:150px;text-align:left;border-radius:16px;padding:12px 14px;background:var(--card);scroll-snap-align:start;min-height:104px;display:flex;flex-direction:column;gap:2px;text-decoration:none}
+.placecard b{font-size:15.5px;font-weight:700;line-height:1.2;margin-top:8px}
+.placecard small{font-size:12.5px;color:var(--soft);line-height:1.25;margin-top:auto}
+.placecard.more{background:var(--ink);color:var(--paper);justify-content:center}
+.placecard.more small{color:inherit;opacity:.7;margin-top:2px}
+.tip{margin-top:22px;border-radius:16px;padding:14px 16px;background:var(--ink);color:var(--paper);border-left:6px solid var(--signal)}
+.tip b{font-size:13.5px;color:var(--signal)}
+.tip p{font-size:16px;line-height:1.4;margin-top:2px}
+:root[data-theme=dark] .mapbox .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.9) saturate(.5)}
+.mapbox .leaflet-tile-pane{filter:saturate(.55) brightness(1.04)}
+
+/* v1.3: opening screen, screen transitions, touch feedback, photo viewer */
+#splash{position:fixed;inset:0;z-index:5000;background:#0E7C66;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .38s ease,transform .38s ease}
+#splash.out{opacity:0;transform:scale(1.06);pointer-events:none}
+#splash .logo{width:104px;animation:sp-drop .6s cubic-bezier(.2,1.3,.4,1) both}
+#splash .logo svg{width:100%;display:block}
+#splash b{font-size:32px;font-weight:700;letter-spacing:-.01em;margin-top:14px;animation:sp-up .45s .25s ease-out both}
+#splash span{font-size:15px;opacity:.85;animation:sp-up .45s .38s ease-out both}
+#splash .track{position:relative;width:190px;height:4px;border-radius:2px;background:rgba(255,255,255,.3);margin-top:34px;display:flex;justify-content:space-between;align-items:center;animation:sp-up .4s .5s ease-out both}
+#splash .track i{width:10px;height:10px;border-radius:50%;background:#0E7C66;border:2.5px solid #fff;position:relative;z-index:1}
+#splash .track em{position:absolute;left:0;top:0;height:4px;width:0;border-radius:2px;background:#FFC107;animation:sp-run 1.05s .55s cubic-bezier(.45,0,.3,1) forwards}
+#splash .track em::after{content:"";position:absolute;right:-9px;top:-7px;width:18px;height:18px;border-radius:50%;background:#FFC107;box-shadow:0 0 0 4px rgba(255,193,7,.3)}
+@keyframes sp-drop{from{opacity:0;transform:translateY(-34px) scale(.8)}to{opacity:1;transform:none}}
+@keyframes sp-up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes sp-run{to{width:100%}}
+
+#view.enter{animation:pg-in .26s cubic-bezier(.2,.8,.3,1) both}
+#view.enter-back{animation:pg-back .24s cubic-bezier(.2,.8,.3,1) both}
+#view.enter-tab{animation:pg-tab .2s ease-out both}
+@keyframes pg-in{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+@keyframes pg-back{from{opacity:0;transform:translateX(-22px)}to{opacity:1;transform:none}}
+@keyframes pg-tab{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.pop{animation:pop-in .34s cubic-bezier(.2,1.2,.4,1) both}
+.pop.d1{animation-delay:.06s}.pop.d2{animation-delay:.12s}
+@keyframes pop-in{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+
+.btn,.item,.chip,.qtile,.linecard,.placecard,.netcard,.citybtn,.planner .row,.planner .swap,.zoom button,.stepper button,.seg button,.back,.card.profile,#tabs a svg{transition:transform .12s ease,opacity .12s ease,background-color .15s ease}
+.btn:active,.qtile:active,.linecard:active,.placecard:active,.netcard:active,.card.profile:active{transform:scale(.965)}
+.chip:active,.citybtn:active,.zoom button:active,.stepper button:active,.back:active{transform:scale(.92)}
+.item:active{background:var(--sunk)}
+.planner .row:active{opacity:.7}
+.planner .swap:active{transform:translateY(-50%) rotate(180deg) scale(.92)}
+.planner .swap{transition:transform .25s ease}
+#tabs a:active svg{transform:scale(.82)}
+#tabs a.on svg{animation:tab-bounce .3s ease}
+@keyframes tab-bounce{0%{transform:scale(.8)}60%{transform:scale(1.14)}100%{transform:scale(1)}}
+#sheet .scrim{animation:fade-in .2s ease both}
+#sheet .panel{animation:rise .26s cubic-bezier(.2,.9,.3,1)}
+@keyframes fade-in{from{opacity:0}to{opacity:1}}
+@keyframes rise{from{transform:translateY(60px);opacity:.3}to{transform:none;opacity:1}}
+#toast{transition:opacity .2s,transform .2s;transform:translateX(-50%) translateY(10px)}
+#toast.on{transform:translateX(-50%)}
+
+button.avatar-btn{border-radius:50%;display:block;margin:0 auto;position:relative}
+button.avatar-btn:active{transform:scale(.95)}
+#photoview{position:fixed;inset:0;z-index:4000;background:rgba(8,10,14,.92);display:grid;place-items:center;animation:fade-in .2s ease both}
+#photoview img,#photoview .big{width:min(86vw,420px);height:min(86vw,420px);border-radius:50%;object-fit:cover;animation:zoom-in .3s cubic-bezier(.2,1.1,.4,1) both}
+#photoview .big{display:grid;place-items:center;background:var(--signal);color:#171A21;font-size:150px;font-weight:700}
+#photoview p{position:absolute;bottom:calc(var(--sb) + 34px);left:0;right:0;text-align:center;color:#fff;font-size:17px;font-weight:600}
+#photoview small{display:block;font-weight:400;opacity:.7;font-size:14px;margin-top:2px}
+#photoview.out{opacity:0;transition:opacity .18s}
+@keyframes zoom-in{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
+
+@media (prefers-reduced-motion:reduce){
+  #splash *,#view.enter,#view.enter-back,#view.enter-tab,.pop,#sheet .panel,#sheet .scrim,#photoview,#photoview img,#photoview .big,#tabs a.on svg{animation:none!important}
+  #splash .track em{width:100%}
+}
+
+/* v1.4: Roboto. It runs wider than the old typeface, so headings and labels are set slightly smaller. */
+.title{font-size:25px;letter-spacing:-.015em;line-height:1.15}
+.planner .row b{font-size:17.5px}
+.fare .amt{font-size:42px}
+.leg .stop .t{font-size:16px}
+.btn{font-size:16px}
+.item b{font-size:15.5px}
+.qtile b{font-size:15.5px}
+.linecard b{font-size:16.5px}
+.placecard b{font-size:14.5px}
+.netcard .stats b{font-size:23px}
+#tabs a{font-size:11.5px}
+#splash b{font-size:30px}

@@ -55,6 +55,20 @@
   function tickets() { var u = Auth.current(); return u ? store.get('tickets.' + u.key, []) : []; }
   function saveTickets(t) { var u = Auth.current(); if (u) store.set('tickets.' + u.key, t); }
 
+  /* ---------- profile photo viewer ---------- */
+  function openPhoto() {
+    var u = Auth.current(); if (!u) return;
+    closePhoto(true);
+    var v = document.createElement('div'); v.id = 'photoview'; v.setAttribute('data-act', 'photo-close');
+    v.innerHTML = (u.photo ? '<img src="' + u.photo + '" alt="Profile photo">' : '<span class="big">' + esc((u.name || '?')[0].toUpperCase()) + '</span>') + '<p>' + esc(u.name) + '<small>Tap anywhere to close</small></p>';
+    document.getElementById('app').appendChild(v);
+  }
+  function closePhoto(now) {
+    var v = document.getElementById('photoview'); if (!v) return;
+    if (now) { v.remove(); return; }
+    v.classList.add('out'); setTimeout(function () { if (v.parentNode) v.remove(); }, 180);
+  }
+
   /* ---------- sheet ---------- */
   function openSheet(html, tall) {
     $sheet.innerHTML = '<div class="scrim" data-act="close-sheet"></div><div class="panel' + (tall ? ' tall' : '') + '">' + html + '</div>';
@@ -131,12 +145,13 @@
     var f = fareNow(r), hol = isHoliday(), notes = [];
     if (r.fare.estimate) notes.push('This route uses the ' + C.premium.name + ', which has its own higher fares. The fare shown is an estimate.');
     r.legs.forEach(function (l) { if (l.note && notes.indexOf(l.note) < 0 && (C.id !== 'delhi' || l.lines.indexOf('pinkb') >= 0)) notes.push(l.note); });
-    return '<div class="card" style="margin-top:12px"><div class="fare"><div class="amt"><sup>₹</sup>' + f + '</div>' +
+    var pop = state.fresh ? ' pop' : ''; state.fresh = false;
+    return '<div class="card' + pop + '" style="margin-top:12px"><div class="fare"><div class="amt"><sup>₹</sup>' + f + '</div>' +
       '<div class="day">' + (C.holidayFares ? (hol ? 'Sunday and national holiday fare' : 'Weekday fare') + '<br>' : '') + '₹' + cardFare(f) + ' ' + esc(C.card.label) + '</div></div>' +
       '<div class="facts"><div><b>' + r.km.toFixed(1) + ' km</b>distance</div><div><b>' + r.min + ' min</b>travel time</div><div><b>' + r.stops + '</b>stations</div><div><b>' + r.changes + '</b>' + (r.changes === 1 ? 'change' : 'changes') + '</div></div>' +
       notes.map(function (n) { return '<p class="note">' + esc(n) + '</p>'; }).join('') + '</div>' +
       (C.holidayFares ? '<div class="chips"><button class="chip' + (!hol ? ' on' : '') + '" data-act="day" data-day="weekday">Weekday fare</button><button class="chip' + (hol ? ' on' : '') + '" data-act="day" data-day="holiday">Sunday or holiday fare</button></div>' : '') +
-      '<div class="card strip" style="margin-top:12px">' + r.legs.map(function (l, i) {
+      '<div class="card strip' + (pop ? ' pop d1' : '') + '" style="margin-top:12px">' + r.legs.map(function (l, i) {
         return (i ? '<div class="change">Change trains at ' + esc(S[l.from].n) + '</div>' : '') + legHtml(l, i);
       }).join('') + '</div>' +
       '<div class="btns"><button class="btn alt" data-act="show-map">Show on map</button><button class="btn signal" data-act="book">Book ticket</button></div>' +
@@ -147,7 +162,7 @@
     compute();
     var r = state.route, u = Auth.current();
     var cityBtn = '<button class="citybtn" data-act="city"><svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.500C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>' + esc(C.name) + '</button>';
-    var html = head(u ? 'Namaste, ' + esc(u.name.split(' ')[0]) : 'Plan a journey', D.meta.stations + ' ' + esc(C.system) + ' stations', cityBtn) +
+    var html = head(greeting(u), 'Where are you going on the ' + esc(C.system) + '?', cityBtn) +
       '<div class="planner"><button class="row" data-act="pick" data-which="from"><span class="pin"></span><span><small>From</small><b class="' + (state.from ? '' : 'ph') + '">' + (state.from ? esc(S[state.from].n) : 'Choose starting station') + '</b></span></button>' +
       '<div class="perf"></div><button class="row" data-act="pick" data-which="to"><span class="pin to"></span><span><small>To</small><b class="' + (state.to ? '' : 'ph') + '">' + (state.to ? esc(S[state.to].n) : 'Choose destination') + '</b></span></button>' +
       '<button class="swap" data-act="swap" aria-label="Swap stations"><svg viewBox="0 0 24 24"><path d="M7 4v15m0 0-3.5-3.5M7 19l3.5-3.5M17 20V5m0 0-3.5 3.5M17 5l3.5 3.5"/></svg></button></div>';
@@ -159,20 +174,62 @@
     } else {
       if (clear) html += '<div class="chips">' + clear + '</div>';
       if (state.from && state.to && state.from === state.to) html += '<p class="note">Choose two different stations.</p>';
-      var fv = favs().filter(function (x) { return x[0] === C.id; });
-      if (fv.length) html += '<h2 class="sec">Saved routes</h2><div class="list">' + fv.slice(0, 4).map(function (x) {
-        return item('data-act="use-route" data-from="' + x[1] + '" data-to="' + x[2] + '"', esc(S[x[1]].n) + ' to ' + esc(S[x[2]].n));
-      }).join('') + '</div>';
-      var jr = store.get('journeys.' + C.id, []).filter(function (x) { return S[x[0]] && S[x[1]]; });
-      if (jr.length) html += '<h2 class="sec">Recent journeys</h2><div class="list">' + jr.map(function (x) {
-        return item('data-act="use-route" data-from="' + x[0] + '" data-to="' + x[1] + '"', esc(S[x[0]].n) + ' to ' + esc(S[x[1]].n));
-      }).join('') + '</div>';
-      html += '<h2 class="sec">Quick start</h2><div class="list">' +
-        item('data-act="near-from"', 'Start from my nearest station', 'Finds the closest stations to you') +
-        item('href="#/places"', 'Places to visit by metro', esc(C.places.slice(0, 3).map(function (p) { return p[0]; }).join(', ')) + ' and more') +
-        item('href="#/fares"', 'Fare chart', '₹' + C.slabs[0][1] + ' to ₹' + C.slabs[C.slabs.length - 1][1] + (C.holidayFares ? ', lower on Sundays and holidays' : ', ' + C.card.pct + '% off with card or mobile QR')) + '</div>';
+      html += homeHtml();
     }
     $view.className = ''; $view.innerHTML = html;
+  }
+  /* small drawing of the whole network, used on the Plan screen */
+  var artCache = {};
+  function networkArt() {
+    if (artCache[C.id]) return artCache[C.id];
+    var xs = [], ys = [], km = 0;
+    IDS.forEach(function (i) { xs.push(S[i].x); ys.push(S[i].y); });
+    var x0 = Math.min.apply(0, xs), x1 = Math.max.apply(0, xs), y0 = Math.min.apply(0, ys), y1 = Math.max.apply(0, ys), w = x1 - x0, h = y1 - y0, pad = Math.max(w, h) * 0.04;
+    var sw = Math.max(w, h) / 110;
+    var paths = D.segs.map(function (sg) { km += sg.km; return '<path d="M' + sg.p.map(function (q) { return q[0] + ' ' + q[1]; }).join('L') + '" stroke="' + E.lines[sg.l].color + '"/>'; }).join('');
+    var dots = IDS.filter(function (i) { return groupsOf(i).length > 1; }).map(function (i) { return '<circle cx="' + S[i].x + '" cy="' + S[i].y + '" r="' + sw * 1.15 + '"/>'; }).join('');
+    artCache[C.id] = { km: Math.round(km), svg: '<svg viewBox="' + (x0 - pad) + ' ' + (y0 - pad) + ' ' + (w + pad * 2) + ' ' + (h + pad * 2) + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><g fill="none" stroke-width="' + sw + '" stroke-linecap="round" stroke-linejoin="round">' + paths + '</g><g class="ix" stroke-width="' + sw * 0.6 + '">' + dots + '</g></svg>' };
+    return artCache[C.id];
+  }
+  var TILE_ICONS = {
+    near: '<circle cx="12" cy="12" r="3.2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>',
+    map: '<path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"/><path d="M9 4v13.5M15 6.5V20"/>',
+    fare: '<path d="M7 5h10M7 9h10M9 5c5 0 5 8 0 8H7l7 7"/>',
+    ticket: '<path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2.5"/>'
+  };
+  function tile(attrs, icon, title, small) {
+    var tag = attrs.indexOf('href=') >= 0 ? 'a' : 'button';
+    return '<' + tag + ' class="qtile" ' + attrs + '><svg viewBox="0 0 24 24">' + TILE_ICONS[icon] + '</svg><b>' + title + '</b><small>' + small + '</small></' + tag + '>';
+  }
+  function homeHtml() {
+    var art = networkArt(), html = '';
+    html += '<a class="netcard" href="#/map">' + art.svg + '<div class="stats"><div><b>' + D.meta.stations + '</b>stations</div><div><b>' + GROUPS.length + '</b>lines</div><div><b>' + art.km + ' km</b>of track</div></div><span class="open">Open map ›</span></a>';
+    html += '<div class="qgrid">' + tile('data-act="near-from"', 'near', 'Nearest station', 'Start from where you are') + tile('href="#/map"', 'map', 'Metro map', 'Lines over the city map') +
+      tile('href="#/fares"', 'fare', 'Fare chart', '₹' + C.slabs[0][1] + ' to ₹' + C.slabs[C.slabs.length - 1][1]) + tile('href="#/tickets"', 'ticket', 'Tickets', 'Bookings and real tickets') + '</div>';
+    var fv = favs().filter(function (x) { return x[0] === C.id; });
+    if (fv.length) html += '<h2 class="sec">Saved routes</h2><div class="list">' + fv.slice(0, 4).map(function (x) {
+      return item('data-act="use-route" data-from="' + x[1] + '" data-to="' + x[2] + '"', esc(S[x[1]].n) + ' to ' + esc(S[x[2]].n));
+    }).join('') + '</div>';
+    var jr = store.get('journeys.' + C.id, []).filter(function (x) { return S[x[0]] && S[x[1]]; });
+    if (jr.length) html += '<h2 class="sec">Recent journeys</h2><div class="list">' + jr.slice(0, 3).map(function (x) {
+      return item('data-act="use-route" data-from="' + x[0] + '" data-to="' + x[1] + '"', esc(S[x[0]].n) + ' to ' + esc(S[x[1]].n));
+    }).join('') + '</div>';
+    html += '<h2 class="sec">Lines</h2><div class="hscroll">' + GROUPS.map(function (g) {
+      var ls = D.lines.filter(function (l) { return l.g === g; }), main = ls[0], n = {};
+      ls.forEach(function (l) { l.st.forEach(function (i) { n[i] = 1; }); });
+      return '<button class="linecard" data-act="open-line" data-g="' + g + '" style="--c:' + main.color + ';--ct:' + main.text + '"><b>' + esc(E.groupName(g)) + '</b><small>' + Object.keys(n).length + ' stations</small><span>' + esc(S[main.st[0]].n) + (main.loop ? ' ring' : ' to ' + esc(S[main.st[main.st.length - 1]].n)) + '</span></button>';
+    }).join('') + '</div>';
+    html += '<h2 class="sec">Popular places</h2><div class="hscroll">' + C.places.slice(0, 10).map(function (p) {
+      var id = BYNAME[p[1]];
+      return '<button class="placecard" data-act="set-to" data-id="' + id + '">' + roundels(id) + '<b>' + esc(p[0]) + '</b><small>' + esc(p[1]) + '</small></button>';
+    }).join('') + '<a class="placecard more" href="#/places"><b>See all places</b><small>' + C.places.length + ' places</small></a></div>';
+    var tip = C.tips[Math.floor(Date.now() / 864e5) % C.tips.length];
+    html += '<div class="tip"><b>Tip of the day</b><p>' + esc(tip) + '</p></div>';
+    return html;
+  }
+  function greeting(u) {
+    var h = new Date().getHours(), g = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+    return u ? g + ', ' + esc(u.name.split(' ')[0]) : g;
   }
   function shareText(r) {
     var t = C.system + ': ' + S[r.from].n + ' to ' + S[r.to].n + '\nFare ₹' + fareNow(r) + ', ' + r.km.toFixed(1) + ' km, about ' + r.min + ' min\n';
@@ -202,7 +259,7 @@
       '<div class="legend">' + GROUPS.map(function (g) { return '<span><i style="background:' + GCOL[g] + '"></i>' + E.groupName(g).replace(' Line', '') + '</span>'; }).join('') + '</div>' +
       '<div class="zoom"><button data-act="tiles" class="' + (tiles ? 'on' : '') + '" aria-label="Street map on or off"><svg viewBox="0 0 24 24"><path d="M12 3 3 8l9 5 9-5-9-5z"/><path d="m3 13 9 5 9-5"/></svg></button><button data-act="locate" aria-label="Show where I am"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button><button data-act="zin" aria-label="Zoom in">+</button><button data-act="zout" aria-label="Zoom out">−</button></div></div>' +
       (r ? '<div class="routebar"><div class="grow"><b>' + esc(S[r.from].n) + ' to ' + esc(S[r.to].n) + '</b><small>₹' + fareNow(r) + ', ' + r.km.toFixed(1) + ' km, ' + r.min + ' min, ' + plural(r.changes, 'change') + '</small></div><button data-act="clear-route">Clear</button></div>' : '');
-    map = new window.MetroMap(document.getElementById('mapwrap'), D, E, { onStation: stationSheet, tiles: tiles, center: C.center ? { at: C.center, zoom: C.zoom } : null });
+    map = new window.MetroMap(document.getElementById('mapwrap'), D, E, { onStation: stationSheet, tiles: tiles, onTilesFailed: function (offline) { toast(offline ? 'No internet. Showing metro lines without the street map.' : 'The street map could not load. Metro lines are still shown.'); }, center: C.center ? { at: C.center, zoom: C.zoom } : null });
     if (r) map.setRoute(r);
     else if (state.mapFocus) { map.focus(state.mapFocus); state.mapFocus = null; }
   }
@@ -350,7 +407,7 @@
     var u = Auth.current(); if (!u) return location.replace('#/login');
     $view.className = '';
     $view.innerHTML = BACK + head('Your profile') +
-      '<div class="card" style="text-align:center;padding:22px 16px">' + avatar(u, 'xl') +
+      '<div class="card" style="text-align:center;padding:22px 16px"><button class="avatar-btn" data-act="photo-zoom" aria-label="View profile photo">' + avatar(u, 'xl') + '</button><p class="hint" style="margin-top:8px">Tap the photo to view it larger</p>' +
       '<div class="btns' + (u.photo ? '' : ' one') + '" style="margin-top:16px"><label class="btn alt">' + (u.photo ? 'Change photo' : 'Add a profile photo') + '<input type="file" id="photo" accept="image/*" hidden></label>' + (u.photo ? '<button class="btn alt" data-act="photo-remove">Remove photo</button>' : '') + '</div></div>' +
       '<form id="nameform" novalidate><label class="field"><span>Your name</span><input name="name" maxlength="40" value="' + esc(u.name) + '" autocomplete="name"></label>' +
       '<p class="err" id="nameerr"></p><button class="btn" type="submit">Save name</button></form>' +
@@ -399,7 +456,7 @@
       '<b style="display:block;font-size:22px;margin-top:12px">' + esc(d.name) + '</b><span class="hint" style="font-size:15px">' + esc(d.role) + '</span></div>' +
       '<div class="card"><b>About me</b><p class="hint" style="margin-top:4px;font-size:15px;color:var(--ink)">' + esc(d.about) + '</p></div>' +
       '<h2 class="sec">Find me online</h2><div class="list">' + d.links.map(function (l) { return item('target="_blank" rel="noopener" href="' + esc(l[1]) + '"', esc(l[0]), esc(l[1].replace(/^https?:\/\/(www\.)?/, ''))); }).join('') + '</div>' +
-      '<p class="legal">MetroYatri version 1.1, designed and developed by ' + esc(d.name) + '.</p>';
+      '<p class="legal">MetroYatri version 1.4, designed and developed by ' + esc(d.name) + '.</p>';
   }
   var loginMode = 'login';
   function renderLogin() {
@@ -455,12 +512,12 @@
   }
   function renderAbout() {
     $view.className = '';
-    $view.innerHTML = BACK + head('About', 'MetroYatri 1.1, ' + esc(C.name)) +
+    $view.innerHTML = BACK + head('About', 'MetroYatri 1.4, ' + esc(C.name)) +
       C.about.map(function (a) { return '<div class="card"><b>' + esc(a[0]) + '</b><p class="hint" style="margin-top:2px">' + esc(a[1]) + '</p></div>'; }).join('') +
       '<div class="card"><b>Tickets</b><p class="hint" style="margin-top:2px">Bookings inside this app are for practice only and are clearly marked. Real tickets are sold only through official channels, which the app links to.</p></div>' +
-      '<div class="card"><b>Street map</b><p class="hint" style="margin-top:2px">The map behind the lines needs internet. Map data © OpenStreetMap contributors, map tiles © CARTO. Without internet the lines are shown on a plain background.</p></div>' +
+      '<div class="card"><b>Street map</b><p class="hint" style="margin-top:2px">The map behind the lines needs internet. Map data and tiles © OpenStreetMap contributors. Without internet the lines are shown on a plain background.</p></div>' +
       '<div class="list" style="margin-top:10px">' + item('href="#/developer"', 'About the developer', esc(CFG.developer.name)) + '</div>' +
-      '<p class="legal">Independent app. Not made by, linked to or approved by DMRC or CMRL. Uses the Mukta typeface (SIL Open Font License), Leaflet (BSD) and qrcode-generator (MIT).</p>';
+      '<p class="legal">Independent app. Not made by, linked to or approved by DMRC or CMRL. Uses the Roboto typeface (SIL Open Font License), Leaflet (BSD) and qrcode-generator (MIT).</p>';
   }
   function citySheet() {
     openSheet('<header><h3>Choose your city<button data-act="close-sheet">Cancel</button></h3></header><div class="body"><div class="list">' + Object.keys(CITIES).map(function (id) {
@@ -476,16 +533,26 @@
     more: ['more', renderMore], login: ['more', renderLogin], verify: ['more', renderVerify], profile: ['more', renderProfile], saved: ['more', renderSaved],
     developer: ['more', renderDeveloper], fares: ['more', renderFares], places: ['more', renderPlaces], help: ['more', renderHelp], about: ['more', renderAbout]
   };
-  function route() {
-    closeSheet();
+  var ROOT = { plan: 1, map: 1, stations: 1, tickets: 1, more: 1 };
+  var lastPage = null, lastDepth = 0, navKind = null;
+  function route(quiet) {
+    closeSheet(); closePhoto(true);
     var parts = (location.hash || '#/plan').slice(2).split('/'), page = PAGES[parts[0]] ? parts[0] : 'plan';
     if (map) { map.destroy(); map = null; }
     PAGES[page][1](parts);
     Array.prototype.forEach.call(document.querySelectorAll('#tabs a'), function (a) { a.classList.toggle('on', a.getAttribute('data-tab') === PAGES[page][0]); });
+    // slide new screens in; going back slides the other way; switching tabs fades up
+    var key = parts.join('/'), depth = ROOT[page] ? 0 : 1;
+    if (!quiet && key !== lastPage) {
+      var cls = navKind === 'tab' || (depth === 0 && lastDepth === 0) ? 'enter-tab' : depth < lastDepth || navKind === 'back' ? 'enter-back' : 'enter';
+      $view.classList.add(cls);
+      $view.addEventListener('animationend', function done() { $view.classList.remove('enter', 'enter-back', 'enter-tab'); $view.removeEventListener('animationend', done); });
+    }
+    lastPage = key; lastDepth = depth; navKind = null;
   }
-  function rerender() { var y = $view.scrollTop; route(); $view.scrollTop = y; }
+  function rerender() { var y = $view.scrollTop; route(true); $view.scrollTop = y; }
   function setEnd(which, id) {
-    state[which] = id; remember(id); state.open = {};
+    state[which] = id; remember(id); state.open = {}; state.fresh = true;
     if (which === 'from' && state.to === id) state.to = null;
     if (which === 'to' && state.from === id) state.from = null;
     if (state.from && state.to) {
@@ -497,7 +564,7 @@
 
   /* ---------- actions ---------- */
   var ACT = {
-    back: function () { if (history.length > 1) history.back(); else go('#/plan'); },
+    back: function () { navKind = 'back'; if (history.length > 1) history.back(); else go('#/plan'); },
     'close-sheet': function () { closeSheet(); if (map) map.pick(null); },
     'close-sheet-nav': function () { closeSheet(); },
     city: function () { citySheet(); },
@@ -505,7 +572,7 @@
     pick: function (b) { var w = b.getAttribute('data-which'); openPicker(w === 'from' ? 'Starting station' : 'Destination', function (id) { setEnd(w, id); rerender(); }); },
     swap: function () { var a = state.from; state.from = state.to; state.to = a; state.open = {}; rerender(); },
     'clear-plan': function () { state.from = state.to = state.route = state.mapRoute = null; state.open = {}; state.mode = 'fast'; $view.scrollTop = 0; route(); },
-    mode: function (b) { state.mode = b.getAttribute('data-mode'); state.open = {}; rerender(); },
+    mode: function (b) { state.mode = b.getAttribute('data-mode'); state.open = {}; state.fresh = true; rerender(); },
     day: function (b) { state.day = b.getAttribute('data-day'); rerender(); },
     premium: function () { state.premium = !state.premium; state.open = {}; rerender(); },
     'toggle-leg': function (b) { var k = b.getAttribute('data-key'); state.open[k] = !state.open[k]; rerender(); },
@@ -546,6 +613,7 @@
     'map-focus': function (b) { state.mapRoute = null; state.mapFocus = b.getAttribute('data-id'); go('#/map'); },
     'set-from': function (b) { setEnd('from', b.getAttribute('data-id')); toPlan(); },
     'set-to': function (b) { setEnd('to', b.getAttribute('data-id')); toPlan(); },
+    'open-line': function (b) { stFilter.q = ''; stFilter.g = b.getAttribute('data-g'); location.replace('#/stations'); route(); },
     'st-line': function (b) { stFilter.g = b.getAttribute('data-g'); document.getElementById('schips').innerHTML = stChips(); document.getElementById('slist').innerHTML = stationsList(); },
     pax: function (b) { var d = +b.getAttribute('data-d'); if (book.pax === 6 && d > 0) toast('Up to 6 passengers per booking'); book.pax = Math.max(1, Math.min(6, book.pax + d)); rerender(); },
     'confirm-book': function () {
@@ -580,6 +648,8 @@
       }, function (m) { b.disabled = false; document.getElementById('verr').textContent = String(m); });
     },
     'verify-resend': function () { Auth.resend().then(function () { toast('Email sent again'); }, function (m) { document.getElementById('verr').textContent = String(m); }); },
+    'photo-zoom': function () { openPhoto(); },
+    'photo-close': function () { closePhoto(); },
     'photo-remove': function () { Auth.setPhoto(null); toast('Photo removed'); rerender(); }
   };
   document.addEventListener('click', function (e) {
@@ -589,18 +659,18 @@
     if (b && ACT[b.getAttribute('data-act')]) { if (b.tagName !== 'A') e.preventDefault(); ACT[b.getAttribute('data-act')](b); }
   });
   document.addEventListener('change', function (e) { if (e.target.name === 'pay') book.pay = e.target.value; });
-  window.addEventListener('hashchange', route);
+  window.addEventListener('hashchange', function () { route(); });
   // tabs replace the current page so the phone's back button does not walk through every tab
   document.getElementById('tabs').addEventListener('click', function (e) {
     var a = e.target.closest('a'); if (!a) return;
-    e.preventDefault(); location.replace(a.getAttribute('href'));
+    e.preventDefault(); navKind = 'tab'; location.replace(a.getAttribute('href'));
   });
   // Android back button: close sheet, go back, return to Plan, then leave the app
-  var ROOT = { plan: 1, map: 1, stations: 1, tickets: 1, more: 1 };
   function onBack() {
     var page = (location.hash || '#/plan').slice(2).split('/')[0] || 'plan';
     if (!$sheet.hidden) { closeSheet(); if (map) map.pick(null); }
-    else if (!ROOT[page]) { if (history.length > 1) history.back(); else location.replace('#/plan'); }
+    else if (document.getElementById('photoview')) closePhoto();
+    else if (!ROOT[page]) { navKind = 'back'; if (history.length > 1) history.back(); else location.replace('#/plan'); }
     else if (page !== 'plan') location.replace('#/plan');
     else if (state.from || state.to) ACT['clear-plan']();
     else if (window.Capacitor && window.Capacitor.nativePromise) window.Capacitor.nativePromise('App', 'exitApp', {});
@@ -611,5 +681,11 @@
   document.documentElement.setAttribute('data-theme', theme);
   loadCity(store.get('city', 'delhi'));
   window.__app = { state: state, Auth: Auth, city: function () { return C.id; } };
-  route();
+  route(true);
+  // opening screen: stays for about 1.7 seconds, then fades into the app
+  var splash = document.getElementById('splash');
+  if (splash) setTimeout(function () {
+    splash.classList.add('out'); $view.classList.add('enter-tab');
+    setTimeout(function () { splash.remove(); $view.classList.remove('enter-tab'); }, 420);
+  }, 1700);
 })();

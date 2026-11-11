@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<meta name="theme-color" content="#171A21">
+<meta name="theme-color" content="#0E7C66">
 <meta name="color-scheme" content="light dark">
 <title>MetroYatri – Metro Guide</title>
 <link rel="icon" href="data:,">
@@ -11,6 +11,14 @@
 <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
+<div id="splash" aria-hidden="true">
+  <div class="logo">
+    <svg viewBox="0 0 120 150"><path d="M60 146 23 86h74z" fill="#fff"/><circle cx="60" cy="58" r="50" fill="#fff"/><rect x="33" y="29" width="54" height="54" rx="11" fill="#0E7C66"/><rect x="42" y="38" width="36" height="21" rx="5" fill="#fff"/><circle cx="47" cy="71" r="4.4" fill="#FFC107"/><circle cx="73" cy="71" r="4.4" fill="#FFC107"/></svg>
+  </div>
+  <b>MetroYatri</b>
+  <span>Delhi and Chennai metro guide</span>
+  <div class="track"><i></i><i></i><i></i><i></i><em></em></div>
+</div>
 <div id="app">
   <main id="view" tabindex="-1"></main>
   <nav id="tabs" aria-label="Main">
@@ -23,6 +31,7 @@
   <div id="sheet" hidden></div>
   <div id="toast" role="status" aria-live="polite"></div>
 </div>
+<script src="js/secrets.js"></script>
 <script src="js/config.js"></script>
 <script src="js/data-delhi.js"></script>
 <script src="js/data-chennai.js"></script>

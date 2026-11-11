@@ -1,16 +1,19 @@
 /* App settings you can change without touching the rest of the code. */
 window.APP_CONFIG = {
-  /* Verified accounts.
-     Paste the Web API key of your own Firebase project here to switch on email-verified accounts
-     (Firebase console > Project settings > General > Web API key; enable Authentication > Email/Password).
-     Leave it empty and accounts are kept on the phone only, without verification. */
-  firebaseApiKey: 'AIzaSyDQtStquJSzrFumLaRzidqs5tHViz4ZOu0',
+  /* Verified accounts (Firebase Web API key).
+     The key is NOT written here. It comes from js/secrets.js, which is created at build time:
+       - on GitHub from the repository secret FIREBASE_API_KEY
+       - on your computer from the .env file (run: npm run secrets)
+     With no key, accounts are kept on the phone only, without verification. */
+  firebaseApiKey: (window.APP_SECRETS || {}).firebaseApiKey || '',
 
-  /* Street map shown behind the metro lines (needs internet). {s} {z} {x} {y} {r} are filled in by the map. */
+  /* Street map shown behind the metro lines (needs internet).
+     Default: OpenStreetMap's own tiles, which need no key and are meant for light use.
+     For an app with many users, replace url with a tile provider that gives you a key. */
   tiles: {
-    light: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-    dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    credit: '&copy; OpenStreetMap contributors &copy; CARTO'
+    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    credit: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19
   },
 
   developer: {
