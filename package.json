@@ -1,8 +1,8 @@
 {
   "name": "metroyatri-delhi",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
-  "description": "MetroYatri - unofficial Delhi Metro route, fare and map guide (Android app)",
+  "description": "MetroYatri - unofficial metro route, fare and map guide for Delhi and Chennai (Android app)",
   "scripts": {
     "sync": "cap sync android",
     "open": "cap open android"

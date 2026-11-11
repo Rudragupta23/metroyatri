@@ -2,6 +2,7 @@
   "appId": "com.metroyatri.delhi",
   "appName": "MetroYatri",
   "webDir": "www",
+  "appendUserAgent": "MetroYatri/1.1",
   "android": {
     "backgroundColor": "#171A21"
   }
