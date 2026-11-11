@@ -14,6 +14,15 @@
       link(s.a + '|' + s.l, s.b + '|' + s.l, { km: s.km, min: s.min, line: s.l, seg: i });
       link(s.b + '|' + s.l, s.a + '|' + s.l, { km: s.km, min: s.min, line: s.l, seg: i });
     });
+    // interchanges where you walk between two differently named stations
+    (cfg.links || []).forEach(function (pr) {
+      data.stations[pr[0]].lines.forEach(function (a) {
+        data.stations[pr[1]].lines.forEach(function (b) {
+          link(pr[0] + '|' + a, pr[1] + '|' + b, { km: 0, min: cfg.walkMin || 9, line: null, x: 1 });
+          link(pr[1] + '|' + b, pr[0] + '|' + a, { km: 0, min: cfg.walkMin || 9, line: null, x: 1 });
+        });
+      });
+    });
     Object.keys(data.stations).forEach(function (id) {
       var ls = data.stations[id].lines;
       ls.forEach(function (a) {
@@ -106,8 +115,29 @@
   /* Normal fare follows the shortest route on the regular lines, whichever route is ridden.
      If the journey rides a premium line (Delhi Airport Express), that part is charged from its own table. */
   Engine.prototype.fare = function (route) {
-    var SL = this.cfg.slabs, P = this.cfg.premium;
-    function slab(km, col) { for (var i = 0; i < SL.length; i++) if (km <= SL[i][0]) return SL[i][col]; }
+    var SL = this.cfg.slabs, P = this.cfg.premium, FG = this.cfg.fareGroups;
+    function slabOf(T, km, col) { for (var i = 0; i < T.length; i++) if (km <= T[i][0]) return T[i][col]; }
+    function slab(km, col) { return slabOf(SL, km, col); }
+    var M = this.data.fares;
+    if (M) {
+      // the operator's own station-to-station fare table
+      var a = M.ids.indexOf(route.from), b = M.ids.indexOf(route.to);
+      if (a >= 0 && b >= 0) { var v = (+M.rows[a].charAt(b)) * M.step; return { km: route.km, weekday: v, holiday: v, premium: 0, estimate: false, exact: true }; }
+    }
+    if (FG) {
+      // several operators, each with its own ticket: add up the fare of each operator's part of the journey
+      var of = {}, parts = [], cur = null;
+      FG.forEach(function (g) { g.lines.forEach(function (l) { of[l] = g; }); });
+      route.legs.forEach(function (l) {
+        var g = of[l.lines[0]];
+        if (!cur || cur.g !== g) { cur = { g: g, km: 0 }; parts.push(cur); }
+        cur.km += l.km;
+      });
+      var tot = 0;
+      parts.forEach(function (x) { x.fare = slabOf(x.g.slabs, x.km, 1); tot += x.fare; });
+      return { km: route.km, weekday: tot, holiday: tot, premium: 0, estimate: false,
+        parts: parts.map(function (x) { return { name: x.g.name, km: x.km, fare: x.fare }; }) };
+    }
     var pFirst = null, pLast = null, normalKm = 0;
     if (route.usesPremium) {
       route.legs.forEach(function (l) {

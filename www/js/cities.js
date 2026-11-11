@@ -18,11 +18,10 @@ window.CITIES = {
       order: ['new-delhi', 'shivaji-stadium', 'dhaula-kuan', 'delhi-aerocity', 'indira-gandhi-international-airport', 'dwarka-sector-21', 'yashobhoomi-dwarka-sector-25'],
       fares: [[0, 21, 43, 54, 64, 64, 75], [21, 0, 32, 54, 54, 64, 64], [43, 32, 0, 32, 32, 54, 54], [54, 54, 32, 0, 21, 32, 43], [64, 54, 32, 21, 0, 21, 32], [64, 64, 54, 32, 21, 0, 21], [75, 64, 54, 43, 32, 21, 0]]
     },
-    official: {
-      whatsapp: 'https://wa.me/919650855800?text=Hi', whatsappNo: '9650855800',
-      app: 'https://play.google.com/store/search?q=DMRC%20Momentum%20Delhi%20Sarthi&c=apps', appName: 'official DMRC app',
-      site: 'https://www.delhimetrorail.com/'
-    },
+    official: { buttons: [
+      ['Book on DMRC WhatsApp (9650855800)', 'https://wa.me/919650855800?text=Hi'],
+      ['Get the official DMRC app', 'https://play.google.com/store/search?q=DMRC%20Momentum%20Delhi%20Sarthi&c=apps']
+    ], site: 'https://www.delhimetrorail.com/' },
     helplines: [['DMRC helpline', '155370'], ['CISF metro security', '155655'], ['Emergency', '112']],
     timings: 'Most lines run from about 5:30 am to 11:30 pm. The Airport Express starts earlier, around 4:45 am. First and last trains differ by station.',
     fareNotes: [
@@ -71,11 +70,10 @@ window.CITIES = {
     fareSince: 'February 2021', holidayFares: false,
     card: { pct: 20, label: 'with Singara Chennai card or mobile QR ticket' },
     xferMin: 6, soft: {}, trunk: {}, term: {}, premium: null,
-    official: {
-      whatsapp: 'https://wa.me/918300086000?text=Hi', whatsappNo: '83000 86000',
-      app: 'https://play.google.com/store/search?q=CMRL%20Chennai%20Metro%20Rail&c=apps', appName: 'official CMRL app',
-      site: 'https://chennaimetrorail.org/'
-    },
+    official: { buttons: [
+      ['Book on CMRL WhatsApp (83000 86000)', 'https://wa.me/918300086000?text=Hi'],
+      ['Get the official CMRL app', 'https://play.google.com/store/search?q=CMRL%20Chennai%20Metro%20Rail&c=apps']
+    ], site: 'https://chennaimetrorail.org/' },
     helplines: [['CMRL customer care', '18604251515'], ['Emergency', '112']],
     timings: 'Trains run from about 5 am to 11 pm. First and last trains differ by station.',
     fareNotes: [
@@ -100,6 +98,94 @@ window.CITIES = {
       ['Vadapalani Murugan Temple', 'Vadapalani'], ['Anna Nagar Tower Park', 'Anna Nagar Tower'], ['Guindy National Park', 'Guindy'],
       ['Madras High Court and Parrys Corner', 'High Court'], ['St. Thomas Mount', 'St. Thomas Mount'], ['Little Mount shrine', 'Little Mount'],
       ['Sri Ramachandra hospital, Porur', 'Thelliyaragaram'], ['Poonamallee bus stand', 'Poonamallee Bus Stand']
+    ]
+  },
+
+  bengaluru: {
+    id: 'bengaluru', name: 'Bengaluru', system: 'Namma Metro', operator: 'BMRCL', checked: '12 Nov 2026',
+    center: null, zoom: null,
+    groups: ['purple', 'green', 'yellow'],
+    groupNames: { purple: 'Purple Line', green: 'Green Line', yellow: 'Yellow Line' },
+    slabs: [[2, 10, 10], [4, 20, 20], [6, 30, 30], [8, 40, 40], [10, 50, 50], [15, 60, 60], [20, 70, 70], [25, 80, 80], [Infinity, 90, 90]],
+    fareSince: 'February 2025', holidayFares: false,
+    card: { pct: 5, label: 'with smart card (10% off outside rush hours)' },
+    xferMin: 6, soft: {}, trunk: {}, term: {}, premium: null,
+    official: { buttons: [
+      ['Book on BMRCL WhatsApp (81055 56677)', 'https://wa.me/918105556677?text=Hi'],
+      ['Get the official Namma Metro app', 'https://play.google.com/store/search?q=Namma%20Metro%20BMRCL&c=apps']
+    ], site: 'https://www.bmrc.co.in/' },
+    helplines: [['BMRCL helpline', '180042512345'], ['Emergency', '112']],
+    timings: 'Trains run from about 5 am to 11 pm. First and last trains differ by station and by day of the week.',
+    fareNotes: [
+      ['Smart card', '5% off in rush hours and 10% off at other times, on Sundays and on national holidays.'],
+      ['Proposed increase', 'A 5% fare increase announced for February 2026 (₹11 to ₹95) was put on hold. If BMRCL brings it in, fares will be slightly higher than shown here.'],
+      ['Station-to-station fares', 'Journey fares in this app come from the BMRCL station-to-station fare table in the August 2026 data feed. For some station pairs BMRCL charges less than the distance band shown above.']
+    ],
+    about: [
+      ['What is included', '83 stations on the Purple Line (Whitefield to Challaghatta), the Green Line (Madavara to Silk Institute) and the Yellow Line (RV Road to Bommasandra).'],
+      ['What is not included', 'The Pink Line (Kalena Agrahara to Tavarekere) and the Blue Line were not open when the data was checked. They are added in app updates once they open.'],
+      ['Where the data comes from', 'Station positions, track shapes and running times come from the community BMRCL GTFS feed, which is built from OpenStreetMap and BMRCL timetables. Fares use the distance bands of February 2025.']
+    ],
+    tips: [
+      'Majestic is where the Purple and Green lines meet. RV Road is where the Green and Yellow lines meet.',
+      'A smart card saves 5% in rush hours and 10% at other times.',
+      'For Electronic City, change to the Yellow Line at RV Road.',
+      'For Whitefield and ITPL, stay on the Purple Line towards Whitefield (Kadugodi).',
+      'Carrying luggage? Choose Fewest changes to avoid long walks between platforms.'
+    ],
+    places: [
+      ['MG Road and Brigade Road', 'Mahatma Gandhi Road'], ['Cubbon Park and Chinnaswamy Stadium', 'Cubbon Park'],
+      ['Vidhana Soudha', 'Dr. B. R. Ambedkar Station, Vidhana Soudha'], ['Lalbagh Botanical Garden', 'Lalbagh'],
+      ['KR Market', 'Krishna Rajendra Market'], ['Majestic bus stand', 'Nadaprabhu Kempegowda Station, Majestic'],
+      ['KSR Bengaluru City railway station', 'Krantivira Sangolli Rayanna Railway Station'], ['Mantri Square mall', 'Mantri Square Sampige Road'],
+      ['Indiranagar 100 Feet Road', 'Indiranagar'], ['ITPL and Whitefield tech parks', 'Pattandur Agrahara'],
+      ['Electronic City', 'Electronic City'], ['Yeshwantpur railway station', 'Yeshwantpur'], ['KR Puram railway station', 'Krishnarajapura'],
+      ['Jayanagar shopping', 'Jayanagar'], ['Silk Board junction', 'Central Silk Board'], ['Jayadeva Hospital', 'Jayadeva Hospital']
+    ]
+  },
+
+  mumbai: {
+    id: 'mumbai', name: 'Mumbai', system: 'Mumbai Metro', operator: 'the metro operators', checked: '12 Nov 2026',
+    center: null, zoom: null,
+    groups: ['blue', 'yellow', 'red', 'aqua'],
+    groupNames: { blue: 'Blue Line 1', yellow: 'Yellow Line 2', red: 'Red Line 7', aqua: 'Aqua Line 3' },
+    slabs: [[3, 10, 10], [12, 20, 20], [18, 30, 30], [24, 40, 40], [30, 50, 50], [Infinity, 60, 60]],
+    fareGroups: [
+      { id: 'l1', name: 'Blue Line 1', lines: ['l1'], slabs: [[2, 10], [5, 20], [8, 30], [Infinity, 40]] },
+      { id: 'mmmocl', name: 'Yellow and Red lines', lines: ['l2a', 'l2b', 'l7'], slabs: [[3, 10], [12, 20], [18, 30], [24, 40], [30, 50], [Infinity, 60]] },
+      { id: 'l3', name: 'Aqua Line 3', lines: ['l3'], slabs: [[3, 10], [12, 20], [18, 30], [24, 40], [30, 50], [36, 60], [Infinity, 70]] }
+    ],
+    fareSince: 'the opening of each line', holidayFares: false, card: null,
+    xferMin: 7, walkMin: 9, soft: {}, trunk: {}, term: {}, premium: null,
+    links: [['d-n-nagar', 'andheri-west'], ['western-express-highway', 'gundavali']],
+    official: { buttons: [
+      ['Get the Mumbai One app (all lines)', 'https://play.google.com/store/search?q=Mumbai%20One&c=apps'],
+      ['Aqua Line 3 on WhatsApp (98730 16836)', 'https://wa.me/919873016836?text=Hi']
+    ], site: 'https://www.mmmocl.co.in/' },
+    helplines: [['Emergency', '112']],
+    timings: 'Most lines run from about 5:30 am to 11:30 pm. Timings differ by line, so check the board at the station.',
+    fareNotes: [
+      ['Three operators, three tickets', 'Blue Line 1, the Yellow and Red lines, and Aqua Line 3 are run by different operators. A journey across them needs a ticket for each part. The app adds the parts together.'],
+      ['One app for all', 'The Mumbai One app sells a single QR ticket that covers every part of a mixed journey.']
+    ],
+    about: [
+      ['What is included', '77 stations on Blue Line 1, Yellow Line 2A and 2B, Red Line 7 and 9, and Aqua Line 3. It includes Line 9 to Kashigaon and Line 2B between Mandale and Chembur, both opened in 2026.'],
+      ['What is not included', 'Navi Mumbai Metro, the Monorail and suburban trains have separate tickets and are not included. Yellow Line 2B is not yet joined to the other lines, so the app cannot plan journeys between it and the rest of the network.'],
+      ['Where the data comes from', 'There is no open data feed for Mumbai Metro, so station positions were entered by hand and are approximate. Distances are scaled to each line\'s official length, and journey times assume an average speed of 33 km/h.']
+    ],
+    tips: [
+      'Blue Line 1, the Yellow and Red lines, and Aqua Line 3 each need their own ticket. The Mumbai One app covers all of them.',
+      'Marol Naka is where Blue Line 1 meets Aqua Line 3.',
+      'D N Nagar (Line 1) and Andheri West (Line 2A) are joined by a short walk.',
+      'Western Express Highway (Line 1) and Gundavali (Line 7) are joined by a walkway.',
+      'For the airport, Aqua Line 3 stops at both Terminal 1 and Terminal 2.'
+    ],
+    places: [
+      ['CSMT railway station', 'Chhatrapati Shivaji Maharaj Terminus'], ['Fort and Flora Fountain', 'Hutatma Chowk'], ['Marine Drive and Churchgate station', 'Churchgate'],
+      ['Mantralaya and Nariman Point', 'Vidhan Bhavan'], ['Siddhivinayak Temple', 'Siddhivinayak'], ['Mahalaxmi Racecourse', 'Mahalaxmi'],
+      ['Nehru Science Centre', 'Science Centre'], ['Mumbai Central railway station', 'Jagannath Shankar Sheth'], ['Dadar', 'Dadar'],
+      ['Bandra Kurla Complex', 'Bandra Kurla Complex'], ['Airport Terminal 2 (international)', 'CSMIA - T2'], ['Airport Terminal 1 (domestic)', 'CSMIA - T1'],
+      ['Sanjay Gandhi National Park', 'Rashtriya Udyan'], ['Andheri railway station', 'Andheri'], ['Ghatkopar railway station', 'Ghatkopar'], ['Versova', 'Versova']
     ]
   }
 };

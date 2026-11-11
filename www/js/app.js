@@ -144,15 +144,17 @@
   function resultHtml(r) {
     var f = fareNow(r), hol = isHoliday(), notes = [];
     if (r.fare.estimate) notes.push('This route uses the ' + C.premium.name + ', which has its own higher fares. The fare shown is an estimate.');
-    r.legs.forEach(function (l) { if (l.note && notes.indexOf(l.note) < 0 && (C.id !== 'delhi' || l.lines.indexOf('pinkb') >= 0)) notes.push(l.note); });
+    if (r.fare.parts && r.fare.parts.length > 1) notes.push('Separate tickets: ' + r.fare.parts.map(function (x) { return '₹' + x.fare + ' for ' + x.name; }).join(', ') + '. The Mumbai One app sells them as one ticket.');
+    r.legs.forEach(function (l) { if (l.note && notes.indexOf(l.note) < 0 && (C.id === 'chennai' || l.lines.indexOf('pinkb') >= 0)) notes.push(l.note); });
     var pop = state.fresh ? ' pop' : ''; state.fresh = false;
     return '<div class="card' + pop + '" style="margin-top:12px"><div class="fare"><div class="amt"><sup>₹</sup>' + f + '</div>' +
-      '<div class="day">' + (C.holidayFares ? (hol ? 'Sunday and national holiday fare' : 'Weekday fare') + '<br>' : '') + '₹' + cardFare(f) + ' ' + esc(C.card.label) + '</div></div>' +
+      '<div class="day">' + (C.holidayFares ? (hol ? 'Sunday and national holiday fare' : 'Weekday fare') + '<br>' : '') + (C.card ? '₹' + cardFare(f) + ' ' + esc(C.card.label) : (r.fare.parts && r.fare.parts.length > 1 ? plural(r.fare.parts.length, 'ticket') + ' needed' : 'Single journey fare')) + '</div></div>' +
       '<div class="facts"><div><b>' + r.km.toFixed(1) + ' km</b>distance</div><div><b>' + r.min + ' min</b>travel time</div><div><b>' + r.stops + '</b>stations</div><div><b>' + r.changes + '</b>' + (r.changes === 1 ? 'change' : 'changes') + '</div></div>' +
       notes.map(function (n) { return '<p class="note">' + esc(n) + '</p>'; }).join('') + '</div>' +
       (C.holidayFares ? '<div class="chips"><button class="chip' + (!hol ? ' on' : '') + '" data-act="day" data-day="weekday">Weekday fare</button><button class="chip' + (hol ? ' on' : '') + '" data-act="day" data-day="holiday">Sunday or holiday fare</button></div>' : '') +
       '<div class="card strip' + (pop ? ' pop d1' : '') + '" style="margin-top:12px">' + r.legs.map(function (l, i) {
-        return (i ? '<div class="change">Change trains at ' + esc(S[l.from].n) + '</div>' : '') + legHtml(l, i);
+        var prev = i ? r.legs[i - 1] : null;
+        return (prev ? '<div class="change">' + (prev.to !== l.from ? 'Walk from ' + esc(S[prev.to].n) + ' to ' + esc(S[l.from].n) + ' station' : 'Change trains at ' + esc(S[l.from].n)) + '</div>' : '') + legHtml(l, i);
       }).join('') + '</div>' +
       '<div class="btns"><button class="btn alt" data-act="show-map">Show on map</button><button class="btn signal" data-act="book">Book ticket</button></div>' +
       '<div class="btns three"><button class="btn alt" data-act="fav">' + (isFav(r) ? 'Unsave' : 'Save route') + '</button><button class="btn alt" data-act="share">Share</button><a class="btn alt" href="#/cost">Monthly cost</a></div>' +
@@ -174,6 +176,7 @@
     } else {
       if (clear) html += '<div class="chips">' + clear + '</div>';
       if (state.from && state.to && state.from === state.to) html += '<p class="note">Choose two different stations.</p>';
+      else if (state.from && state.to) html += '<p class="note">No metro route joins ' + esc(S[state.from].n) + ' and ' + esc(S[state.to].n) + ' yet. One of them is on a section that is not connected to the rest of the network.</p>';
       html += homeHtml();
     }
     $view.className = ''; $view.innerHTML = html;
@@ -239,15 +242,15 @@
   var cost = { trips: 2, days: 22 };
   function renderCost() {
     var r = state.route; if (!r) return go('#/plan');
-    var f = r.fare.weekday, n = cost.trips * cost.days, full = f * n, card = cardFare(f) * n;
+    var f = r.fare.weekday, n = cost.trips * cost.days, full = f * n, card = C.card ? cardFare(f) * n : full;
     $view.className = '';
     $view.innerHTML = BACK + head('Monthly cost', esc(S[r.from].n) + ' to ' + esc(S[r.to].n)) +
       '<div class="card"><div class="kv" style="align-items:center"><span>Journeys per day</span><div class="stepper"><button data-act="cost" data-k="trips" data-d="-1" aria-label="Fewer journeys">−</button><b>' + cost.trips + '</b><button data-act="cost" data-k="trips" data-d="1" aria-label="More journeys">+</button></div></div>' +
       '<div class="kv" style="align-items:center"><span>Travel days per month</span><div class="stepper"><button data-act="cost" data-k="days" data-d="-1" aria-label="Fewer days">−</button><b>' + cost.days + '</b><button data-act="cost" data-k="days" data-d="1" aria-label="More days">+</button></div></div></div>' +
-      '<div class="card"><div class="kv"><span>Fare per journey</span><b>₹' + f + '</b></div><div class="kv"><span>' + n + ' journeys at full fare</span><b>₹' + full.toLocaleString('en-IN') + '</b></div>' +
-      '<div class="kv"><span>' + esc(C.card.label.replace(/^with /, 'With ')) + '</span><b>₹' + card.toLocaleString('en-IN') + '</b></div>' +
-      '<div class="kv total"><span>You save each month</span><b>₹' + (full - card).toLocaleString('en-IN') + '</b></div></div>' +
-      '<p class="hint" style="margin-top:12px">Uses the weekday fare and the standard ' + C.card.pct + '% discount.</p>';
+      '<div class="card"><div class="kv"><span>Fare per journey</span><b>₹' + f + '</b></div><div class="kv' + (C.card ? '' : ' total') + '"><span>' + n + ' journeys' + (C.card ? ' at full fare' : ' each month') + '</span><b>₹' + full.toLocaleString('en-IN') + '</b></div>' +
+      (C.card ? '<div class="kv"><span>' + esc(C.card.label.replace(/^with /, 'With ')) + '</span><b>₹' + card.toLocaleString('en-IN') + '</b></div>' +
+      '<div class="kv total"><span>You save each month</span><b>₹' + (full - card).toLocaleString('en-IN') + '</b></div>' : '') + '</div>' +
+      '<p class="hint" style="margin-top:12px">' + (C.card ? 'Uses the weekday fare and the standard ' + C.card.pct + '% discount.' : 'Uses the single journey fare. Monthly passes sold by the operators can cost less.') + '</p>';
   }
 
   /* ---------- Map ---------- */
@@ -312,11 +315,15 @@
       var l = E.lines[lid], i = l.st.indexOf(id), n = l.st.length;
       var prev = i > 0 ? l.st[i - 1] : (l.loop ? l.st[n - 1] : null), next = i < n - 1 ? l.st[i + 1] : (l.loop ? l.st[0] : null);
       html += '<div class="card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span class="rd"><i style="--c:' + l.color + '"></i></span><b style="font-size:17px">' + esc(l.name) + '</b></div>' +
-        '<div class="kv"><span>Platform level</span><b>' + (LAY[st.lay[l.g]] || '') + '</b></div>' +
-        '<div class="kv"><span>Opened</span><b>' + new Date(st.op[l.g]).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) + '</b></div>' +
+        (st.lay && LAY[st.lay[l.g]] ? '<div class="kv"><span>Platform level</span><b>' + LAY[st.lay[l.g]] + '</b></div>' : '') +
+        (st.op && st.op[l.g] ? '<div class="kv"><span>Opened</span><b>' + new Date(st.op[l.g]).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) + '</b></div>' : '') +
         (prev ? '<div class="kv"><span>' + (l.loop ? 'One way round' : 'Towards ' + esc(S[l.st[0]].n)) + '</span><b><a href="#/station/' + prev + '">' + esc(S[prev].n) + '</a></b></div>' : '<div class="kv"><span>Line starts here</span><b></b></div>') +
         (next ? '<div class="kv"><span>' + (l.loop ? 'Other way round' : 'Towards ' + esc(S[l.st[n - 1]].n)) + '</span><b><a href="#/station/' + next + '">' + esc(S[next].n) + '</a></b></div>' : '<div class="kv"><span>Line ends here</span><b></b></div>') +
         (l.note ? '<p class="hint" style="margin-top:6px">' + esc(l.note) + '</p>' : '') + '</div>';
+    });
+    (C.links || []).forEach(function (pr) {
+      var other = pr[0] === id ? pr[1] : pr[1] === id ? pr[0] : null; if (!other) return;
+      html += '<div class="card"><b style="font-size:16px">Walk to ' + esc(S[other].n) + ' station</b><p class="hint" style="margin-top:2px">A short walk links this station to <a href="#/station/' + other + '">' + esc(S[other].n) + '</a> for the ' + esc(lineNames(other)) + '.</p></div>';
     });
     var near = C.places.filter(function (p) { return p[1] === st.n; });
     if (near.length) html += '<h2 class="sec">Get off here for</h2><div class="list">' + near.map(function (p) { return item('', esc(p[0]), '', '', ''); }).join('') + '</div>';
@@ -329,8 +336,7 @@
   function officialCard() {
     var o = C.official;
     return '<div class="card" style="margin-top:12px"><b style="font-size:17px">Get a real ticket</b><p class="hint" style="margin:4px 0 2px">Only ' + esc(C.operator) + ' can issue tickets that open the metro gates. These open the official channels:</p>' +
-      '<div class="btns one"><a class="btn" target="_blank" rel="noopener" href="' + o.whatsapp + '">Book on ' + esc(C.operator) + ' WhatsApp (' + o.whatsappNo + ')</a>' +
-      '<a class="btn alt" target="_blank" rel="noopener" href="' + o.app + '">Get the ' + esc(o.appName) + '</a></div></div>';
+      '<div class="btns one">' + o.buttons.map(function (b, i) { return '<a class="btn' + (i ? ' alt' : '') + '" target="_blank" rel="noopener" href="' + b[1] + '">' + esc(b[0]) + '</a>'; }).join('') + '</div></div>';
   }
   function qrSvg(text) { var q = window.qrcode(0, 'M'); q.addData(text); q.make(); return q.createSvgTag({ cellSize: 4, margin: 0, scalable: true }); }
   function renderTickets() {
@@ -356,7 +362,7 @@
     var f = fareNow(r);
     $view.className = '';
     $view.innerHTML = BACK + head('Book ticket', 'Single journey, valid today') +
-      '<p class="note" style="margin:0 0 12px">Practice booking. No money is taken and this ticket will not open metro gates. For a real ticket use the official ' + esc(C.operator) + ' options below.</p>' +
+      '<p class="note" style="margin:0 0 12px">Practice booking. No money is taken and this ticket will not open metro gates. For a real ticket use the official options below.</p>' +
       '<div class="card"><div class="kv"><span>From</span><b>' + esc(S[r.from].n) + '</b></div><div class="kv"><span>To</span><b>' + esc(S[r.to].n) + '</b></div>' +
       '<div class="kv"><span>Journey</span><b>' + r.km.toFixed(1) + ' km, ' + plural(r.changes, 'change') + '</b></div>' +
       '<div class="kv" style="align-items:center"><span>Passengers</span><div class="stepper"><button data-act="pax" data-d="-1" aria-label="Fewer passengers">−</button><b>' + book.pax + '</b><button data-act="pax" data-d="1" aria-label="More passengers">+</button></div></div>' +
@@ -393,7 +399,7 @@
       item('href="#/saved"', 'Saved routes', fv.length ? plural(fv.length, 'route') + ' saved' : 'Nothing saved yet') +
       item('href="#/tickets"', 'My bookings', u ? plural(tickets().length, 'practice booking') : 'Log in to see bookings') + '</div>' +
       '<h2 class="sec">Travel information</h2><div class="list">' +
-      item('href="#/fares"', 'Fare chart', 'Fares by distance and discounts') +
+      item('href="#/fares"', 'Fare chart', 'Fares by distance') +
       item('href="#/places"', 'Places to visit by metro', 'Nearest station for popular places') +
       item('href="#/help"', 'Timings, helplines and real tickets', esc(C.helplines[0][0])) + '</div>' +
       '<h2 class="sec">App</h2><div class="list">' +
@@ -401,7 +407,7 @@
       item('href="#/about"', 'About this app and its data', 'Network checked on ' + esc(C.checked)) +
       item('href="#/developer"', 'About the developer', esc(CFG.developer.name)) +
       (u ? item('data-act="logout"', 'Log out', '', '', '') + '<button class="item" data-act="del-account"><span class="grow"><b style="color:#C62828">Delete my account</b></span></button>' : '') + '</div>' +
-      '<p class="legal">MetroYatri is an independent guide made by ' + esc(CFG.developer.name) + '. It is not made by, linked to or approved by DMRC or CMRL.</p>';
+      '<p class="legal">MetroYatri is an independent guide made by ' + esc(CFG.developer.name) + '. It is not made by, linked to or approved by any metro operator.</p>';
   }
   function renderProfile() {
     var u = Auth.current(); if (!u) return location.replace('#/login');
@@ -456,7 +462,7 @@
       '<b style="display:block;font-size:22px;margin-top:12px">' + esc(d.name) + '</b><span class="hint" style="font-size:15px">' + esc(d.role) + '</span></div>' +
       '<div class="card"><b>About me</b><p class="hint" style="margin-top:4px;font-size:15px;color:var(--ink)">' + esc(d.about) + '</p></div>' +
       '<h2 class="sec">Find me online</h2><div class="list">' + d.links.map(function (l) { return item('target="_blank" rel="noopener" href="' + esc(l[1]) + '"', esc(l[0]), esc(l[1].replace(/^https?:\/\/(www\.)?/, ''))); }).join('') + '</div>' +
-      '<p class="legal">MetroYatri version 1.4, designed and developed by ' + esc(d.name) + '.</p>';
+      '<p class="legal">MetroYatri version 1.5, designed and developed by ' + esc(d.name) + '.</p>';
   }
   var loginMode = 'login';
   function renderLogin() {
@@ -469,8 +475,8 @@
       '<label class="field"><span>Password</span><input name="pw" type="password" autocomplete="' + (up ? 'new-password' : 'current-password') + '" maxlength="60"></label>' +
       '<p class="err" id="autherr"></p><button class="btn" type="submit">' + (up ? 'Create account' : 'Log in') + '</button>' +
       (cloud && !up ? '<div class="btns one"><button class="btn alt" type="button" data-act="forgot">Forgot password</button></div>' : '') + '</form>' +
-      '<p class="legal">' + (cloud ? 'This is a MetroYatri account, not your DMRC or CMRL account. Only people who can open the email inbox can use the account.'
-        : 'This is not your DMRC or CMRL account. Accounts on this phone are not verified, so do not reuse a password from another service.') + '</p>';
+      '<p class="legal">' + (cloud ? 'This is a MetroYatri account, not an account with a metro operator. Only people who can open the email inbox can use the account.'
+        : 'This is not an account with a metro operator. Accounts on this phone are not verified, so do not reuse a password from another service.') + '</p>';
     document.getElementById('authform').addEventListener('submit', function (e) {
       e.preventDefault();
       var f = e.target, btn = f.querySelector('button[type=submit]'), err = document.getElementById('autherr');
@@ -491,12 +497,21 @@
       '<p class="err" id="verr"></p><button class="btn signal" data-act="verify-check">I have opened the link</button>' +
       '<div class="btns"><button class="btn alt" data-act="verify-resend">Send the email again</button><button class="btn alt" data-act="logout">Use another email</button></div></div>';
   }
+  function slabTable(T, cols) {
+    var lo = 0;
+    return '<table class="slab"><tr><th>Distance</th>' + cols.map(function (c) { return '<th>' + c[0] + '</th>'; }).join('') + '</tr>' +
+      T.map(function (r) { var row = '<tr><td>' + (r[0] === Infinity ? 'Over ' + lo + ' km' : lo + ' to ' + r[0] + ' km') + '</td>' + cols.map(function (c) { return '<td>₹' + c[1](r) + '</td>'; }).join('') + '</tr>'; lo = r[0]; return row; }).join('') + '</table>';
+  }
   function renderFares() {
-    var lo = 0; $view.className = '';
-    $view.innerHTML = BACK + head(esc(C.name) + ' fare chart', 'In force since ' + esc(C.fareSince)) + '<div class="card"><table class="slab"><tr><th>Distance</th><th>' + (C.holidayFares ? 'Mon to Sat' : 'Fare') + '</th>' + (C.holidayFares ? '<th>Sunday, holiday</th>' : '<th>' + C.card.pct + '% off</th>') + '</tr>' +
-      C.slabs.map(function (s) { var row = '<tr><td>' + (s[0] === Infinity ? 'Over ' + lo + ' km' : lo + ' to ' + s[0] + ' km') + '</td><td>₹' + s[1] + '</td><td>₹' + (C.holidayFares ? s[2] : cardFare(s[1])) + '</td></tr>'; lo = s[0]; return row; }).join('') + '</table></div>' +
+    $view.className = '';
+    var cols = [[C.holidayFares ? 'Mon to Sat' : 'Fare', function (r) { return r[1]; }]];
+    if (C.holidayFares) cols.push(['Sunday, holiday', function (r) { return r[2]; }]);
+    else if (C.card) cols.push([C.card.pct + '% off', function (r) { return cardFare(r[1]); }]);
+    $view.innerHTML = BACK + head(esc(C.name) + ' fare chart', 'In force since ' + esc(C.fareSince)) +
+      (C.fareGroups ? C.fareGroups.map(function (g) { return '<div class="card"><b>' + esc(g.name) + '</b>' + slabTable(g.slabs, [['Fare', function (r) { return r[1]; }]]) + '</div>'; }).join('')
+        : '<div class="card">' + slabTable(C.slabs, cols) + '</div>') +
       C.fareNotes.map(function (n) { return '<div class="card"><b>' + esc(n[0]) + '</b><p class="hint" style="margin-top:2px">' + esc(n[1]) + '</p></div>'; }).join('') +
-      '<div class="card"><b>How fare is worked out</b><p class="hint" style="margin-top:2px">Fare depends on the shortest distance between your two stations. Near the edge of a distance band the app can be one band out, so treat the fare as a close guide and confirm at the station or in the official ' + esc(C.operator) + ' app.</p></div>';
+      '<div class="card"><b>How fare is worked out</b><p class="hint" style="margin-top:2px">Fare depends on the distance between your two stations. Near the edge of a distance band the app can be one band out, so treat the fare as a close guide and confirm at the station or in the official app.</p></div>';
   }
   function renderPlaces() {
     $view.className = '';
@@ -508,16 +523,16 @@
     $view.innerHTML = BACK + head(esc(C.system) + ' help') +
       '<div class="card"><b>Train timings</b><p class="hint" style="margin-top:2px">' + esc(C.timings) + '</p></div>' +
       '<h2 class="sec">Helplines</h2><div class="list">' + C.helplines.map(function (h) { return item('href="tel:' + h[1] + '"', esc(h[0]), h[1]); }).join('') + '</div>' + officialCard() +
-      '<div class="btns one"><a class="btn alt" target="_blank" rel="noopener" href="' + C.official.site + '">Open the ' + esc(C.operator) + ' website</a></div>';
+      '<div class="btns one"><a class="btn alt" target="_blank" rel="noopener" href="' + C.official.site + '">Open the official website</a></div>';
   }
   function renderAbout() {
     $view.className = '';
-    $view.innerHTML = BACK + head('About', 'MetroYatri 1.4, ' + esc(C.name)) +
+    $view.innerHTML = BACK + head('About', 'MetroYatri 1.5, ' + esc(C.name)) +
       C.about.map(function (a) { return '<div class="card"><b>' + esc(a[0]) + '</b><p class="hint" style="margin-top:2px">' + esc(a[1]) + '</p></div>'; }).join('') +
       '<div class="card"><b>Tickets</b><p class="hint" style="margin-top:2px">Bookings inside this app are for practice only and are clearly marked. Real tickets are sold only through official channels, which the app links to.</p></div>' +
       '<div class="card"><b>Street map</b><p class="hint" style="margin-top:2px">The map behind the lines needs internet. Map data and tiles © OpenStreetMap contributors. Without internet the lines are shown on a plain background.</p></div>' +
       '<div class="list" style="margin-top:10px">' + item('href="#/developer"', 'About the developer', esc(CFG.developer.name)) + '</div>' +
-      '<p class="legal">Independent app. Not made by, linked to or approved by DMRC or CMRL. Uses the Roboto typeface (SIL Open Font License), Leaflet (BSD) and qrcode-generator (MIT).</p>';
+      '<p class="legal">Independent app. Not made by, linked to or approved by any metro operator. Uses the Roboto typeface (SIL Open Font License), Leaflet (BSD) and qrcode-generator (MIT).</p>';
   }
   function citySheet() {
     openSheet('<header><h3>Choose your city<button data-act="close-sheet">Cancel</button></h3></header><div class="body"><div class="list">' + Object.keys(CITIES).map(function (id) {
