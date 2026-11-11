@@ -1,0 +1,8 @@
+{
+  "appId": "com.metroyatri.delhi",
+  "appName": "MetroYatri",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#171A21"
+  }
+}
