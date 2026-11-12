@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   var CFG = window.APP_CONFIG, CITIES = window.CITIES, NET = window.NET, Auth = window.Auth;
-  var T = window.T, I18N = window.I18N, Native = window.Native, Sync = window.Sync, VERSION = '2.1';
+  var T = window.T, I18N = window.I18N, Native = window.Native, Sync = window.Sync, VERSION = '2.3';
   var $view = document.getElementById('view'), $sheet = document.getElementById('sheet'), $toast = document.getElementById('toast');
   var store = {
     get: function (k, d) { try { var v = localStorage.getItem('my.' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -71,7 +71,16 @@
   function sw(on) { return '<span class="switch' + (on ? ' on' : '') + '"><i></i></span>'; }
 
   /* saved routes and bookings (saved routes carry their city) */
-  function favs() { return store.get('favs', []).map(function (x) { return x.length === 2 ? ['delhi', x[0], x[1]] : x; }).filter(function (x) { return NET[x[0]] && NET[x[0]].stations[x[1]] && NET[x[0]].stations[x[2]]; }); }
+  /* saved routes belong to the logged-in account; without a login they are kept as a guest list on the phone */
+  function favStore() { var u = Auth.current(); return u ? 'favs.' + u.key : 'favs'; }
+  function adoptFavs() {
+    var u = Auth.current(), guest = store.get('favs', []); if (!u || !guest.length) return;
+    var mine = store.get('favs.' + u.key, []), seen = {};
+    mine.forEach(function (x) { seen[x.join('|')] = 1; });
+    guest.forEach(function (x) { if (x.length === 2) x = ['delhi', x[0], x[1]]; if (!seen[x.join('|')]) { seen[x.join('|')] = 1; mine.push(x); } });
+    store.set('favs.' + u.key, mine.slice(0, 30)); store.set('favs', []);
+  }
+  function favs() { return store.get(favStore(), []).map(function (x) { return x.length === 2 ? ['delhi', x[0], x[1]] : x; }).filter(function (x) { return NET[x[0]] && NET[x[0]].stations[x[1]] && NET[x[0]].stations[x[2]]; }); }
   function isFav(r) { return favs().some(function (x) { return x[0] === C.id && x[1] === r.from && x[2] === r.to; }); }
   function tickets() { var u = Auth.current(); return u ? store.get('tickets.' + u.key, []) : []; }
   function saveTickets(t) { var u = Auth.current(); if (u) store.set('tickets.' + u.key, t); }
@@ -94,13 +103,20 @@
 
   /* ---------- sheet ---------- */
   function openSheet(html, tall) {
-    clearTimeout(sheetT); $sheet.classList.remove('out');
+    clearTimeout(sheetT); $sheet.classList.remove('out', 'center');
     $sheet.innerHTML = '<div class="scrim" data-act="close-sheet"></div><div class="panel' + (tall ? ' tall' : '') + '">' + html + '</div>';
     $sheet.hidden = false;
   }
   var sheetT = null;
-  function closeSheet() { clearTimeout(sheetT); $sheet.classList.remove('out'); $sheet.hidden = true; $sheet.innerHTML = ''; }
+  function closeSheet() { clearTimeout(sheetT); $sheet.classList.remove('out', 'center'); $sheet.hidden = true; $sheet.innerHTML = ''; }
   function slideSheetAway() { if ($sheet.hidden) return; $sheet.classList.add('out'); clearTimeout(sheetT); sheetT = setTimeout(closeSheet, 170); }
+  /* small box in the middle of the screen that asks before something important happens */
+  var confirmCb = null;
+  function confirmBox(title, text, yes, cb, danger) {
+    confirmCb = cb;
+    openSheet('<div class="body"><h3>' + esc(title) + '</h3><p>' + esc(text) + '</p><div class="btns"><button class="btn alt" data-act="close-sheet">' + T('Cancel') + '</button><button class="btn' + (danger ? ' danger solid' : '') + '" data-act="confirm-yes">' + esc(yes) + '</button></div></div>');
+    $sheet.classList.add('center');
+  }
   function sheetHead(title, btn) { return '<header><h3>' + esc(title) + '<button data-act="close-sheet">' + T(btn || 'Cancel') + '</button></h3>'; }
 
   /* ---------- station picker, with address search ---------- */
@@ -134,7 +150,7 @@
       html += '<div class="list" style="margin-bottom:10px">' + item('data-act="nearest"', T('Use my nearest station'), T('Needs location permission')) + '</div>' +
         '<p class="hint" style="padding:0 4px 10px">' + T('You can also type an address, office, mall or landmark to find the stations near it.') + '</p>';
       var rec = store.get('recent.' + C.id, []).filter(function (id) { return S[id]; });
-      if (rec.length) html += '<h2 class="sec" style="margin-top:6px">' + T('Recent') + '</h2><div class="list">' + rec.map(function (id) { return stationRow(id); }).join('') + '</div><h2 class="sec">' + T('All stations') + '</h2>';
+      if (rec.length) html += '<h2 class="sec split" style="margin-top:6px">' + T('Recent') + '<button data-act="clear-recent">' + T('Clear') + '</button></h2><div class="list">' + rec.map(function (id) { return stationRow(id); }).join('') + '</div><h2 class="sec">' + T('All stations') + '</h2>';
     }
     if (!ids.length) return (typed ? geoRow(q) : '') + '<div class="empty"><b>' + esc(T('No station matches “{0}”', q)) + '</b>' + T(typed ? 'Search it as an address above, or check the spelling.' : 'Check the spelling, or try an older name for the station.') + '</div>';
     return html + '<div class="list">' + ids.slice(0, 80).map(function (id) { return stationRow(id, aliasHit(id, q)); }).join('') + '</div>' +
@@ -187,6 +203,32 @@
     }).then(function (r) { if (!r.ok) throw 0; return r.json(); });
   }
 
+  /* ---------- first and last trains ---------- */
+  function tt(a, b) { var k = a + '>' + b; return (new Date().getDay() === 0 && D.ttSun && D.ttSun[k]) || (D.tt && D.tt[k]) || null; }
+  function clock(m) { var d = new Date(); d.setHours(Math.floor((m % 1440) / 60), m % 60, 0, 0); return fmtTime(d); }
+  /* for a planned route leaving now: first and last train at the start, and a warning if a train would be missed */
+  function trainTimes(r) {
+    if (!D.tt) return null;
+    var now = new Date(), nowM = now.getHours() * 60 + now.getMinutes(), off = 1, out = { warn: [], first: null, last: null, from: r.from };
+    if (nowM < 180) nowM += 1440;   // just after midnight still belongs to last night's service
+    r.legs.some(function (l, i) {
+      if (i) off += r.legs[i - 1].to !== l.from ? (C.walkMin || 9) : (C.xferMin || 6);
+      var lastB = Infinity, known = false, t0 = tt(l.stations[0], l.stations[1]);
+      for (var k = 0; k < l.stations.length - 1; k++) { var t = tt(l.stations[k], l.stations[k + 1]); if (t) { known = true; lastB = Math.min(lastB, t[1] - l.times[k]); } }
+      if (i === 0 && t0) { out.first = D.ttRough ? null : t0[0]; out.last = known ? lastB : null; }
+      var arrive = nowM + off;
+      if (known && arrive > lastB) { out.warn.push(T('You would miss the last {0} train from {1} tonight. It leaves at about {2}.', T(l.name), sn(l.from), clock(lastB))); return true; }
+      if (known && lastB - arrive <= 20) out.warn.push(T('Hurry: the last {0} train from {1} leaves at about {2}.', T(l.name), sn(l.from), clock(lastB)));
+      if (i === 0 && t0 && !D.ttRough && nowM < 1440 && nowM > 180 && nowM + off < t0[0]) out.warn.push(T('Trains have not started yet. The first train from {0} leaves at about {1}.', sn(l.from), clock(t0[0])));
+      off += l.min;
+    });
+    return out;
+  }
+  function timesRow(a, b) {
+    var t = b && tt(a, b); if (!t) return '';
+    return '<div class="kv sub"><span>' + T(D.ttRough ? 'Last train' : 'First and last train') + '</span><b>' + (D.ttRough ? '' : clock(t[0]) + ', ') + clock(t[1]) + '</b></div>';
+  }
+
   /* ---------- Plan ---------- */
   function compute() {
     state.route = (state.from && state.to && state.from !== state.to) ? E.plan(state.from, state.to, state.mode, { premium: state.premium }) : null;
@@ -219,6 +261,7 @@
     if (r.fare.estimate) notes.push(T('This route uses the {0}, which has its own higher fares. The fare shown is an estimate.', T(C.premium.name)));
     if (parts) notes.push(T(C.id === 'mumbai' ? 'Separate tickets: {0}. The Mumbai One app sells them as one ticket.' : 'The fare adds these parts: {0}.', parts.map(function (x) { return T('₹{0} for {1}', x.fare, T(x.name)); }).join(', ')));
     r.legs.forEach(function (l) { if (l.note && notes.indexOf(T(l.note)) < 0 && (C.id === 'chennai' || l.lines.indexOf('pinkb') >= 0)) notes.push(T(l.note)); });
+    var tm = trainTimes(r); if (tm) tm.warn.forEach(function (w) { notes.push(w); });
     if (pl.from || pl.to) notes.push(T('Door to door: about {0} min, with the walking shown below.', doorMin(r)));
     var pop = state.fresh ? ' pop' : ''; state.fresh = false;
     return '<div class="card' + pop + '" style="margin-top:12px"><div class="fare"><div class="amt"><sup>₹</sup>' + f + '</div>' +
@@ -230,6 +273,7 @@
         var prev = i ? r.legs[i - 1] : null;
         return (prev ? '<div class="change">' + esc(prev.to !== l.from ? T('Walk from {0} to {1} station', sn(prev.to), sn(l.from)) : T('Change trains at {0}', sn(l.from))) + '</div>' : '') + legHtml(l, i);
       }).join('') + walkLeg(pl.to, r.to, false) + '</div>' +
+      (tm && tm.last !== null ? '<p class="hint" style="margin:10px 2px 0">' + esc(tm.first !== null ? T('From {0} today: first train at about {1}, last train for this journey at about {2}.', sn(r.from), clock(tm.first), clock(tm.last)) : T('From {0} today: last train for this journey at about {1}.', sn(r.from), clock(tm.last))) + '</p>' : '') +
       '<div class="btns one"><button class="btn" data-act="j-start"><svg viewBox="0 0 24 24"><path d="M6 9a6 6 0 0 1 12 0c0 6 2 7 2 7H4s2-1 2-7"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>' + T('Start journey with arrival alert') + '</button></div>' +
       '<div class="btns"><button class="btn alt" data-act="show-map">' + T('Show on map') + '</button><button class="btn signal" data-act="book">' + T('Book ticket') + '</button></div>' +
       '<div class="btns three"><button class="btn alt" data-act="fav">' + T(isFav(r) ? 'Unsave' : 'Save route') + '</button><button class="btn alt" data-act="share">' + T('Share') + '</button><a class="btn alt" href="#/cost">' + T('Monthly cost') + '</a></div>' +
@@ -301,7 +345,7 @@
     var fv = favs().filter(function (x) { return x[0] === C.id; });
     if (fv.length) html += '<h2 class="sec">' + T('Saved routes') + '</h2><div class="list">' + fv.slice(0, 4).map(function (x) { return routeItem('use-route', C.id, x[1], x[2]); }).join('') + '</div>';
     var jr = store.get('journeys.' + C.id, []).filter(function (x) { return S[x[0]] && S[x[1]]; });
-    if (jr.length) html += '<h2 class="sec">' + T('Recent journeys') + '</h2><div class="list">' + jr.slice(0, 3).map(function (x) { return routeItem('use-route', C.id, x[0], x[1]); }).join('') + '</div>';
+    if (jr.length) html += '<h2 class="sec split">' + T('Recent journeys') + '<button data-act="clear-journeys">' + T('Clear') + '</button></h2><div class="list">' + jr.slice(0, 3).map(function (x) { return routeItem('use-route', C.id, x[0], x[1]); }).join('') + '</div>';
     html += '<h2 class="sec">' + T('Lines') + '</h2><div class="hscroll">' + GROUPS.map(function (g) {
       var ls = D.lines.filter(function (l) { return l.g === g; }), main = ls[0], n = {};
       ls.forEach(function (l) { l.st.forEach(function (i) { n[i] = 1; }); });
@@ -602,8 +646,8 @@
       html += '<div class="card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span class="rd"><i style="--c:' + l.color + '"></i></span><b style="font-size:17px">' + esc(T(l.name)) + '</b></div>' +
         (st.lay && LAY[st.lay[l.g]] ? '<div class="kv"><span>' + T('Platform level') + '</span><b>' + T(LAY[st.lay[l.g]]) + '</b></div>' : '') +
         (st.op && st.op[l.g] ? '<div class="kv"><span>' + T('Opened') + '</span><b>' + new Date(st.op[l.g]).toLocaleDateString(I18N.locale(), { day: 'numeric', month: 'short', year: 'numeric' }) + '</b></div>' : '') +
-        (prev ? '<div class="kv"><span>' + esc(l.loop ? T('One way round') : T('Towards {0}', sn(l.st[0]))) + '</span>' + link(prev) + '</div>' : '<div class="kv"><span>' + T('Line starts here') + '</span><b></b></div>') +
-        (next ? '<div class="kv"><span>' + esc(l.loop ? T('Other way round') : T('Towards {0}', sn(l.st[n - 1]))) + '</span>' + link(next) + '</div>' : '<div class="kv"><span>' + T('Line ends here') + '</span><b></b></div>') +
+        (prev ? '<div class="kv"><span>' + esc(l.loop ? T('One way round') : T('Towards {0}', sn(l.st[0]))) + '</span>' + link(prev) + '</div>' + timesRow(id, prev) : '<div class="kv"><span>' + T('Line starts here') + '</span><b></b></div>') +
+        (next ? '<div class="kv"><span>' + esc(l.loop ? T('Other way round') : T('Towards {0}', sn(l.st[n - 1]))) + '</span>' + link(next) + '</div>' + timesRow(id, next) : '<div class="kv"><span>' + T('Line ends here') + '</span><b></b></div>') +
         (l.note ? '<p class="hint" style="margin-top:6px">' + esc(T(l.note)) + '</p>' : '') + '</div>';
     });
     (C.links || []).forEach(function (pr) {
@@ -613,7 +657,8 @@
     var near = C.places.filter(function (p) { return p[1] === st.n; });
     if (near.length) html += '<h2 class="sec">' + T('Get off here for') + '</h2><div class="list">' + near.map(function (p) { return item('', esc(T(p[0])), '', '', ''); }).join('') + '</div>';
     html += '<div class="btns"><button class="btn alt" data-act="map-focus" data-id="' + id + '">' + T('See on map') + '</button><a class="btn alt" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(st.n + ' metro station ' + C.name) + '">' + T('Open in Google Maps') + '</a></div>' +
-      '<p class="hint" style="margin-top:12px">' + esc(T(C.timings)) + '</p>';
+      (C.id === 'delhi' ? '<div class="btns one"><a class="btn alt" target="_blank" rel="noopener" href="https://www.google.com/search?q=' + encodeURIComponent(st.n + ' metro station gates parking lift site:delhimetrorail.com') + '">' + T('Gates, parking and lifts on the DMRC website') + '</a></div>' : '') +
+      '<p class="hint" style="margin-top:12px">' + esc(T(D.ttSrc || C.timings)) + '</p>';
     $view.className = ''; $view.innerHTML = html; $view.scrollTop = 0;
   }
 
@@ -694,6 +739,7 @@
       (Sync.available() ? item(u ? (u.verified ? 'data-act="sync-now"' : 'href="#/verify"') : 'href="#/login"', T('Sync across phones'), esc(syncLine(u))) : '') + '</div>' +
       '<h2 class="sec">' + T('Travel information') + '</h2><div class="list">' +
       item('href="#/fares"', T('Fare chart'), T('Fares by distance')) +
+      item('href="#/cards"', T('Cards and passes'), T('Card price, where to recharge, day passes')) +
       item('href="#/places"', T('Places to visit by metro'), T('Nearest station for popular places')) +
       item('href="#/help"', T('Timings, helplines and real tickets'), esc(T(C.helplines[0][0]))) + '</div>' +
       '<h2 class="sec">' + T('App') + '</h2><div class="list">' +
@@ -762,7 +808,7 @@
       '<p class="legal">' + esc(T('MetroYatri version {0}, designed and developed by {1}.', VERSION, d.name)) + '</p>';
   }
   var loginMode = 'login';
-  function afterLogin() { Sync.now().then(function (changed) { if (changed) rerender(); }); }
+  function afterLogin() { adoptFavs(); Sync.now().then(function (changed) { if (changed) rerender(); }); }
   function renderLogin() {
     $view.className = '';
     var up = loginMode === 'signup', cloud = Auth.cloud;
@@ -781,7 +827,7 @@
       var f = e.target, btn = f.querySelector('button[type=submit]'), err = document.getElementById('autherr');
       btn.disabled = true; err.textContent = '';
       (up ? Auth.signup(f.name.value, f.id.value, f.pw.value) : Auth.login(f.id.value, f.pw.value)).then(function (u) {
-        loginMode = 'login';
+        loginMode = 'login'; adoptFavs();
         if (Auth.cloud && !u.verified) { toast(T(up ? 'Verification email sent' : 'Verify your email to continue')); location.replace('#/verify'); return route(); }
         toast(T('Logged in as {0}', u.name)); var n = state.next || '#/more'; state.next = null; location.replace(n); route(); afterLogin();
       }, function (msg) { btn.disabled = false; err.textContent = T(String(msg)); });
@@ -794,7 +840,7 @@
     $view.innerHTML = backBtn() + head(T('Verify your email'), T('One step left before you can book')) +
       '<div class="card"><p style="font-size:16px">' + T('We sent a link to {0}.', '<b>' + esc(u.email) + '</b>') + '</p><ol class="steps"><li>' + T('Open the verification email. Check the spam folder too.') + '</li><li>' + T('Tap the link in it.') + '</li><li>' + T('Come back here and tap the button below.') + '</li></ol>' +
       '<p class="err" id="verr"></p><button class="btn signal" data-act="verify-check">' + T('I have opened the link') + '</button>' +
-      '<div class="btns"><button class="btn alt" data-act="verify-resend">' + T('Send the email again') + '</button><button class="btn alt" data-act="logout">' + T('Use another email') + '</button></div></div>';
+      '<div class="btns"><button class="btn alt" data-act="verify-resend">' + T('Send the email again') + '</button><button class="btn alt" data-act="logout-now">' + T('Use another email') + '</button></div></div>';
   }
   function slabTable(tb, cols) {
     var lo = 0;
@@ -810,7 +856,17 @@
       (C.fareGroups ? C.fareGroups.map(function (g) { return '<div class="card"><b>' + esc(T(g.name)) + '</b>' + slabTable(g.slabs, [[T('Fare'), function (r) { return r[1]; }]]) + '</div>'; }).join('')
         : '<div class="card">' + slabTable(C.slabs, cols) + '</div>') +
       C.fareNotes.map(function (n) { return info(n[0], n[1]); }).join('') +
+      '<div class="list" style="margin-top:10px">' + item('href="#/cards"', T('Cards and passes'), T('Card price, where to recharge, day passes')) + '</div>' +
       info('How fare is worked out', 'Fare depends on the distance between your two stations. Near the edge of a distance band the app can be one band out, so treat the fare as a close guide and confirm at the station or in the official app.');
+  }
+  function renderCards() {
+    var k = C.cards; $view.className = '';
+    $view.innerHTML = backBtn() + head(esc(T('Cards and passes')), esc(T(C.system))) +
+      k.items.map(function (x) { return info(x[0], x[1]); }).join('') +
+      '<div class="btns one">' + k.links.map(function (l) { return '<a class="btn" target="_blank" rel="noopener" href="' + esc(l[1]) + '">' + esc(T(l[0])) + '</a>'; }).join('') +
+      C.official.buttons.map(function (b) { return '<a class="btn alt" target="_blank" rel="noopener" href="' + b[1] + '">' + esc(T(b[0])) + '</a>'; }).join('') +
+      '<a class="btn alt" target="_blank" rel="noopener" href="' + C.official.site + '">' + T('Open the official website') + '</a></div>' +
+      '<p class="hint" style="margin-top:12px">' + esc(T('Prices checked on {0}. Operators change them from time to time, so confirm at the station before you pay.', trDate(k.checked))) + '</p>';
   }
   function renderPlaces() {
     $view.className = '';
@@ -871,7 +927,7 @@
     plan: ['plan', renderPlan], book: ['plan', renderBook], cost: ['plan', renderCost], journey: ['plan', renderJourney], map: ['map', renderMap], stations: ['stations', renderStations],
     station: ['stations', function (p) { renderStation(p[1]); }], tickets: ['tickets', renderTickets], ticket: ['tickets', function (p) { renderTicket(p[1]); }],
     more: ['more', renderMore], login: ['more', renderLogin], verify: ['more', renderVerify], profile: ['more', renderProfile], saved: ['more', renderSaved], alerts: ['more', renderAlerts], privacy: ['more', renderPrivacy],
-    developer: ['more', renderDeveloper], fares: ['more', renderFares], places: ['more', renderPlaces], help: ['more', renderHelp], about: ['more', renderAbout]
+    developer: ['more', renderDeveloper], fares: ['more', renderFares], cards: ['more', renderCards], places: ['more', renderPlaces], help: ['more', renderHelp], about: ['more', renderAbout]
   };
   var ROOT = { plan: 1, map: 1, stations: 1, tickets: 1, more: 1 };
   var lastPage = null, lastDepth = 0, navKind = null;
@@ -901,10 +957,22 @@
     }
   }
   function toPlan() { closeSheet(); if ((location.hash || '#/plan') === '#/plan') rerender(); else go('#/plan'); }
-  function setFavs(list) { store.set('favs', list.slice(0, 30)); Sync.soon(); }
+  function setFavs(list) { store.set(favStore(), list.slice(0, 30)); Sync.soon(); }
 
   var themeT = null;
   function flip(b, on, label) { var k = b && b.querySelector('.switch'); if (!k) return rerender(); k.classList.toggle('on', on); var sm = b.querySelector('small'); if (sm && label) sm.textContent = label; }
+
+  /* after logging out or deleting the account nothing of that person stays on screen */
+  function leftAccount() {
+    Object.keys(CITIES).forEach(function (c) { store.del('journeys.' + c); store.del('recent.' + c); });
+    var m = reminder(); if (m.on || m.route) { m.on = false; m.route = null; store.set('remind', m); scheduleReminder(); }
+    state.from = state.to = state.route = state.mapRoute = null; state.place = { from: null, to: null }; state.open = {};
+    store.del('syncState'); loginMode = 'login';
+  }
+  function doLogout() {
+    Auth.logout(); leftAccount(); toast(T('Logged out'));
+    if ((location.hash || '').indexOf('#/verify') === 0) { location.replace('#/login'); route(); } else rerender();
+  }
 
   /* ---------- actions ---------- */
   var ACT = {
@@ -921,6 +989,8 @@
     },
     pick: function (b) { var w = b.getAttribute('data-which'); openPicker(T(w === 'from' ? 'Starting point' : 'Destination'), function (id, place) { setEnd(w, id, place); rerender(); }); },
     swap: function () { var a = state.from, p = state.place.from; state.from = state.to; state.to = a; state.place.from = state.place.to; state.place.to = p; state.open = {}; rerender(); },
+    'clear-recent': function () { store.del('recent.' + C.id); var q = document.getElementById('pq'), l = document.getElementById('plist'); if (l) l.innerHTML = pickerList(q ? q.value : ''); toast(T('Recent searches cleared')); },
+    'clear-journeys': function () { store.del('journeys.' + C.id); toast(T('Recent journeys cleared')); rerender(); },
     'clear-plan': function () { state.from = state.to = state.route = state.mapRoute = null; state.place = { from: null, to: null }; state.open = {}; state.mode = 'fast'; $view.scrollTop = 0; route(); },
     mode: function (b) { state.mode = b.getAttribute('data-mode'); state.open = {}; state.fresh = true; rerender(); },
     day: function (b) { state.day = b.getAttribute('data-day'); rerender(); },
@@ -1033,10 +1103,18 @@
       flip(b, d === 'dark', T(d === 'dark' ? 'On' : 'Off'));
       clearTimeout(themeT); themeT = setTimeout(function () { root.classList.remove('theme-fade'); }, 450);
     },
-    logout: function () { Auth.logout(); loginMode = 'login'; toast(T('Logged out')); if ((location.hash || '').indexOf('#/verify') === 0) { location.replace('#/login'); route(); } else rerender(); },
-    'del-account': function (b) {
-      if (!b.getAttribute('data-sure')) { b.setAttribute('data-sure', '1'); b.querySelector('b').textContent = T('Tap again to delete the account and its bookings'); return; }
-      Auth.remove().then(function () { toast(T('Account deleted')); rerender(); }, function (m) { toast(T(String(m))); });
+    'confirm-yes': function () { var cb = confirmCb; confirmCb = null; closeSheet(); if (cb) cb(); },
+    logout: function () {
+      var u = Auth.current(); if (!u) return;
+      confirmBox(T('Log out?'), T('Your saved routes and bookings stay with your account. They come back when you log in again.'), T('Log out'), doLogout);
+    },
+    'logout-now': function () { doLogout(); },
+    'del-account': function () {
+      var u = Auth.current(); if (!u) return;
+      confirmBox(T('Delete your account?'), T('This removes your account, saved routes and bookings for good. It cannot be undone.'), T('Delete account'), function () {
+        toast(T('Deleting your account…'));
+        Auth.remove().then(function () { leftAccount(); toast(T('Account deleted')); rerender(); }, function (m) { toast(T(String(m))); });
+      }, true);
     },
     'login-mode': function (b) { loginMode = b.getAttribute('data-m'); rerender(); },
     forgot: function () {
@@ -1066,7 +1144,7 @@
     el.appendChild(dot); setTimeout(function () { dot.remove(); }, 520);
   }, { passive: true });
   function later(fn, quick) { if (quick) return fn(); if (tapBusy) return; tapBusy = true; setTimeout(function () { tapBusy = false; fn(); }, TAP_MS); }
-  var QUICK = { cost: 1, pax: 1, zin: 1, zout: 1, 'photo-close': 1, 'toggle-leg': 1 };
+  var QUICK = { 'clear-recent': 1, cost: 1, pax: 1, zin: 1, zout: 1, 'photo-close': 1, 'toggle-leg': 1 };
   document.addEventListener('click', function (e) {
     var p = e.target.closest('[data-pick]');
     if (p && pickerCb) {
@@ -1111,6 +1189,7 @@
   var theme = store.get('theme', null) || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
   document.documentElement.setAttribute('data-theme', theme);
   loadCity(store.get('city', 'delhi'));
+  adoptFavs();
   window.__app = { state: state, Auth: Auth, city: function () { return C.id; }, image: function () { return routeImage(state.route); }, tick: jTick };
   tabsText(); route(true); jWatch();
   // saved routes and bookings follow the account

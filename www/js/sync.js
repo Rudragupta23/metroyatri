@@ -12,7 +12,7 @@ window.Sync = (function () {
   var timer = null, busy = false, again = false, listeners = [];
   function favKey(x) { return x.join('|'); }
   function user() { var u = Auth.current(); return u && u.mode === 'cloud' && u.verified ? u : null; }
-  function local(u) { return { favs: store.get('favs', []), tickets: store.get('tickets.' + u.key, []), gone: store.get('gone.' + u.key, {}) }; }
+  function local(u) { return { favs: store.get('favs.' + u.key, []), tickets: store.get('tickets.' + u.key, []), gone: store.get('gone.' + u.key, {}) }; }
   function merge(a, b) {
     var gone = {}, k;
     for (k in a.gone) gone[k] = a.gone[k];
@@ -40,7 +40,7 @@ window.Sync = (function () {
         return r.json().then(function (j) { try { return JSON.parse(j.fields.data.stringValue); } catch (e) { return {}; } });
       }).then(function (remote) {
         var before = local(u), m = merge(before, remote);
-        store.set('favs', m.favs); store.set('tickets.' + u.key, m.tickets); store.set('gone.' + u.key, m.gone);
+        store.set('favs.' + u.key, m.favs); store.set('tickets.' + u.key, m.tickets); store.set('gone.' + u.key, m.gone);
         var changedLocal = JSON.stringify([before.favs, before.tickets]) !== JSON.stringify([m.favs, m.tickets]);
         var same = JSON.stringify([remote.favs || [], remote.tickets || [], remote.gone || {}]) === JSON.stringify([m.favs, m.tickets, m.gone]);
         var done = function () { state({ ok: true, at: Date.now() }); return changedLocal; };

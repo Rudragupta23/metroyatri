@@ -33,6 +33,16 @@ window.CITIES = {
       ['What is not included', 'Noida Aqua Line, Rapid Metro Gurugram and Namo Bharat trains have separate tickets and are not included. Sections still being built (Golden Line, Krishna Park Extension to Deepali Chowk, Soorghat station) are added in app updates once they open.'],
       ['Where the data comes from', 'Track distances and train running times come from the DMRC open transit data feed. Newer sections use the published corridor length, and their map positions are approximate. Fares use the DMRC distance bands of 25 August 2025.']
     ],
+    cards: {
+      checked: '12 Nov 2026',
+      items: [
+        ['Smart card', 'A new card costs ₹150: a ₹50 deposit that is returned when you give the card back, and ₹100 of travel value. It gives 10% off every journey.'],
+        ['Where to recharge', 'At any station counter (from ₹200), at ticket machines (from ₹100), or online from ₹100 on the DMRC recharge site, Paytm, PhonePe and Amazon Pay. The card can hold up to ₹3,000.'],
+        ['Tourist card', 'Unlimited travel for 1 day costs ₹200 and for 3 days ₹500. Both include a ₹50 deposit. They are not valid on the Airport Express.'],
+        ['National Common Mobility Card', 'A bank-issued NCMC (RuPay) card also works at the gates.']
+      ],
+      links: [['Recharge on the DMRC site', 'https://www.dmrcsmartcard.com/']]
+    },
     tips: [
       'Fares are lower on Sundays and national holidays. The app switches to them by itself on Sundays.',
       'A smart card saves 10% on every journey, and 20% outside rush hours.',
@@ -85,6 +95,16 @@ window.CITIES = {
       ['What is not included', 'Chennai MRTS and suburban trains have separate tickets and are not included. Yellow Line stations between Porur Junction and Vadapalani, and the rest of Phase 2, are added in app updates once they open.'],
       ['Where the data comes from', 'CMRL does not publish an open data feed, so station positions were entered by hand and are approximate. Distances are scaled to each line\'s official length, and journey times assume an average speed of 34 km/h.']
     ],
+    cards: {
+      checked: '12 Nov 2026',
+      items: [
+        ['Singara Chennai card', 'This is the card for Chennai Metro. It is a National Common Mobility Card issued with State Bank of India and also works on MTC buses. The old metro travel card is no longer sold or recharged.'],
+        ['Where to recharge', 'At the ticket counter of any metro station, by cash, UPI or bank card.'],
+        ['Stored Value Pass in the app', 'The CMRL app has a digital pass you load with ₹50 to ₹3,000 and scan at the gate, so you do not need a card.'],
+        ['Discount', 'The card and mobile QR tickets get 20% off the fare.']
+      ],
+      links: [['About the Singara Chennai card (SBI)', 'https://sbi.bank.in/web/personal-banking/card/prepaid/singara-chennai-card']]
+    },
     tips: [
       'Singara Chennai card and mobile QR tickets are 20% cheaper than paper tickets.',
       'Chennai Central and Alandur are where the Blue and Green lines meet.',
@@ -126,6 +146,15 @@ window.CITIES = {
       ['What is not included', 'The Pink Line (Kalena Agrahara to Tavarekere) and the Blue Line were not open when the data was checked. They are added in app updates once they open.'],
       ['Where the data comes from', 'Station positions, track shapes and running times come from the community BMRCL GTFS feed, which is built from OpenStreetMap and BMRCL timetables. Fares use the distance bands of February 2025.']
     ],
+    cards: {
+      checked: '12 Nov 2026',
+      items: [
+        ['Smart card', 'Sold at every station counter. You need a balance of at least ₹90 on the card to enter. It gives 5% off in rush hours and 10% off at other times.'],
+        ['Where to recharge', 'At station counters, in the Namma Metro app and on the BMRCL site. An online recharge reaches the card when you tap at a gate, about an hour after paying.'],
+        ['Unlimited travel passes', 'On a card: ₹300 for 1 day, ₹600 for 3 days, ₹900 for 5 days, each including a ₹50 deposit. As a mobile QR pass in the Namma Metro app: ₹250, ₹550 and ₹850, with no deposit.']
+      ],
+      links: []
+    },
     tips: [
       'Majestic is where the Purple and Green lines meet. RV Road is where the Green and Yellow lines meet.',
       'A smart card saves 5% in rush hours and 10% at other times.',
@@ -173,6 +202,16 @@ window.CITIES = {
       ['What is not included', 'Navi Mumbai Metro, the Monorail and suburban trains have separate tickets and are not included. Yellow Line 2B is not yet joined to the other lines, so the app cannot plan journeys between it and the rest of the network.'],
       ['Where the data comes from', 'There is no open data feed for Mumbai Metro, so station positions were entered by hand and are approximate. Distances are scaled to each line\'s official length, and journey times assume an average speed of 33 km/h.']
     ],
+    cards: {
+      checked: '12 Nov 2026',
+      items: [
+        ['Mumbai 1 card', 'A National Common Mobility Card that works on the metro lines and on BEST buses. It is issued free at metro station counters. Load at least ₹100 to start using it. It holds up to ₹2,000.'],
+        ['Where to recharge', 'At station ticket counters and customer care counters.'],
+        ['Tourist pass on the Yellow and Red lines', 'Unlimited travel on Lines 2A and 7 for 1 day costs ₹80 and for 3 days ₹200. It is loaded on the Mumbai 1 card. It is not valid on Blue Line 1 or Aqua Line 3.'],
+        ['Trip passes on Blue Line 1', 'Blue Line 1 sells monthly trip passes that lower the cost of each journey. Prices depend on the distance, so check at the counter.']
+      ],
+      links: [['Yellow and Red lines: card help', 'https://www.mmmocl.co.in/faq'], ['Blue Line 1: questions and answers', 'https://reliancemumbaimetro.com/metro-faq']]
+    },
     tips: [
       'Blue Line 1, the Yellow and Red lines, and Aqua Line 3 each need their own ticket. The Mumbai One app covers all of them.',
       'Marol Naka is where Blue Line 1 meets Aqua Line 3.',
@@ -213,6 +252,15 @@ window.CITIES = {
       ['What is not included', 'MMTS suburban trains have separate tickets and are not included. Phase 2 lines, including the airport line, are added in app updates once they open.'],
       ['Where the data comes from', 'There is no open data feed for Hyderabad Metro, so station positions were entered by hand and are approximate. Distances are scaled to each line\'s official length, and journey times assume an average speed of 33 km/h.']
     ],
+    cards: {
+      checked: '12 Nov 2026',
+      items: [
+        ['Smart card', 'Costs ₹100 at any station ticket counter. This amount is not returned. The card gives 10% off every journey.'],
+        ['Where to recharge', 'At station ticket counters in steps of ₹50, or online in steps of ₹100 through the T-Savaari app, Paytm and PhonePe.'],
+        ['Offer cards', 'The holiday card and student pass were special offers that have been started and stopped several times. Ask at the counter whether one is running now.']
+      ],
+      links: []
+    },
     tips: [
       'Ameerpet is where the Red and Blue lines meet. MG Bus Station is where the Red and Green lines meet.',
       'A smart card saves 10% on every journey.',
@@ -253,6 +301,16 @@ window.CITIES = {
       ['What is not included', 'Blue Line trains end at Shahid Khudiram while Kavi Subhash is rebuilt. The Purple Line and the Orange Line are not joined to the other lines yet, so the app cannot plan journeys between them and the rest of the network. Suburban trains are not included.'],
       ['Where the data comes from', 'There is no open data feed for Kolkata Metro, so station positions were entered by hand and are approximate. Distances are scaled to each line\'s official length, and journey times assume an average speed of 33 km/h.']
     ],
+    cards: {
+      checked: '12 Nov 2026',
+      items: [
+        ['Smart card', 'A new card costs ₹100: a ₹50 deposit that is returned with the card, and the rest as travel value. The card is valid for 10 years from the first use.'],
+        ['Bonus on recharge', 'Each recharge adds 5% extra travel value.'],
+        ['Where to recharge', 'At station counters, at recharge machines in stations, and online.'],
+        ['Tourist card', 'A card with unlimited rides for 3 or 5 days has been sold around Durga Puja. Ask at the counter whether it is on sale now.']
+      ],
+      links: []
+    },
     tips: [
       'Esplanade is where the Blue and Green lines meet.',
       'For the airport, change at Noapara to the Yellow Line and get off at Jai Hind.',
@@ -294,6 +352,17 @@ window.CITIES = {
       ['What is not included', 'Six Pink Line stations between Balewadi and Shivaji Nagar are not open yet and are left out. Extensions to Nigdi and Katraj are added in app updates once they open.'],
       ['Where the data comes from', 'There is no open data feed for Pune Metro, so station positions were entered by hand and are approximate. Distances are scaled to each line\'s official length, and journey times assume an average speed of 33 km/h.']
     ],
+    cards: {
+      checked: '12 Nov 2026',
+      items: [
+        ['One Pune card', 'A National Common Mobility Card sold at the One Pune card counter in stations for ₹100 plus tax. It gives 10% off fares on the Purple and Aqua lines.'],
+        ['Student pass', 'The One Pune Vidyarthi pass gives students 30% off. Carry your student ID when you buy it.'],
+        ['Daily pass', 'Unlimited travel for one day costs ₹100.'],
+        ['Where to recharge', 'At station counters, at the kiosks in stations, and online on the One Pune card site. The smallest top-up is ₹50.'],
+        ['Pink Line', 'The Pink Line has a different operator. Ask at a Pink Line counter which cards and passes it accepts.']
+      ],
+      links: []
+    },
     tips: [
       'District Court is where all three lines meet.',
       'For Hinjawadi IT Park, take the Pink Line towards Maan.',

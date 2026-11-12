@@ -131,3 +131,7 @@ metroyatri/
 Full policy: [`docs/privacy-policy.html`](docs/privacy-policy.html)
 
 ---
+
+## License
+
+Released under the [MIT License](LICENSE).

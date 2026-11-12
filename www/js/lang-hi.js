@@ -154,5 +154,24 @@ window.LANG_HI = {
   'Deleting your data': 'अपना डेटा हटाना', 'Open Account and tap Delete my account. This removes your account from Firebase and deletes your saved routes and bookings from Firestore. You can also ask for deletion through the contact below.': 'खाता खोलें और मेरा खाता हटाएं दबाएं। इससे आपका खाता Firebase से और आपके सेव किए रास्ते व बुकिंग Firestore से हट जाते हैं। आप नीचे दिए संपर्क से भी डेटा हटाने को कह सकते हैं।',
   'The app is a travel guide for general use and is not aimed at children under 13. It does not knowingly collect information from them.': 'यह ऐप आम लोगों के लिए यात्रा गाइड है और 13 साल से छोटे बच्चों के लिए नहीं बना है। यह जानबूझकर उनकी कोई जानकारी नहीं लेता।',
   'If this policy changes, the new version is shown here and in the app listing, with a new date.': 'अगर यह नीति बदलती है, तो नया रूप नई तारीख के साथ यहां और ऐप की लिस्टिंग में दिखाया जाएगा।',
-  'MetroYatri is made by {0}, an independent developer in India.': 'MetroYatri को {0} ने बनाया है, जो भारत के एक स्वतंत्र डेवलपर हैं।', 'Write to {0}.': '{0} पर लिखें।', 'For questions or a deletion request, open an issue on the project page:': 'सवाल या डेटा हटाने के अनुरोध के लिए प्रोजेक्ट पेज पर issue खोलें:', 'Open the project page': 'प्रोजेक्ट पेज खोलें'
+  'MetroYatri is made by {0}, an independent developer in India.': 'MetroYatri को {0} ने बनाया है, जो भारत के एक स्वतंत्र डेवलपर हैं।', 'Write to {0}.': '{0} पर लिखें।', 'For questions or a deletion request, open an issue on the project page:': 'सवाल या डेटा हटाने के अनुरोध के लिए प्रोजेक्ट पेज पर issue खोलें:', 'Open the project page': 'प्रोजेक्ट पेज खोलें',
+
+  /* v2.2: asking before logging out or deleting */
+  'Log out?': 'लॉग आउट करें?', 'Your saved routes and bookings stay with your account. They come back when you log in again.': 'आपके सेव किए रास्ते और बुकिंग आपके खाते में सुरक्षित रहेंगे। दोबारा लॉग इन करने पर वापस आ जाएंगे।',
+  'Delete your account?': 'अपना खाता हटाएं?', 'This removes your account, saved routes and bookings for good. It cannot be undone.': 'इससे आपका खाता, सेव किए रास्ते और बुकिंग हमेशा के लिए हट जाएंगे। इसे वापस नहीं किया जा सकता।',
+  'Delete account': 'खाता हटाएं', 'Deleting your account…': 'आपका खाता हटाया जा रहा है…',
+
+  /* v2.3: clear buttons, train times, cards and passes */
+  'Recent searches cleared': 'हाल की खोजें हटा दी गईं', 'Recent journeys cleared': 'हाल की यात्राएं हटा दी गईं',
+  'First and last train': 'पहली और आखिरी ट्रेन', 'Last train': 'आखिरी ट्रेन',
+  'You would miss the last {0} train from {1} tonight. It leaves at about {2}.': 'आज रात {1} से {0} की आखिरी ट्रेन आपसे छूट जाएगी। वह लगभग {2} पर निकलती है।',
+  'Hurry: the last {0} train from {1} leaves at about {2}.': 'जल्दी करें: {1} से {0} की आखिरी ट्रेन लगभग {2} पर निकलती है।',
+  'Trains have not started yet. The first train from {0} leaves at about {1}.': 'ट्रेनें अभी शुरू नहीं हुई हैं। {0} से पहली ट्रेन लगभग {1} पर निकलती है।',
+  'From {0} today: first train at about {1}, last train for this journey at about {2}.': 'आज {0} से: पहली ट्रेन लगभग {1} पर, इस यात्रा के लिए आखिरी ट्रेन लगभग {2} पर।',
+  'From {0} today: last train for this journey at about {1}.': 'आज {0} से: इस यात्रा के लिए आखिरी ट्रेन लगभग {1} पर।',
+  'Gates, parking and lifts on the DMRC website': 'गेट, पार्किंग और लिफ़्ट की जानकारी DMRC वेबसाइट पर',
+  'Cards and passes': 'कार्ड और पास', 'Card price, where to recharge, day passes': 'कार्ड की कीमत, रिचार्ज कहां करें, दिन के पास',
+  'Prices checked on {0}. Operators change them from time to time, so confirm at the station before you pay.': 'कीमतें {0} को जांची गईं। मेट्रो कंपनियां इन्हें समय-समय पर बदलती हैं, इसलिए पैसे देने से पहले स्टेशन पर पक्का कर लें।',
+  'Last train times are from the DMRC open timetable data and can be a few minutes out. Check the station board late at night.': 'आखिरी ट्रेन का समय DMRC के खुले टाइमटेबल डेटा से है और इसमें कुछ मिनट का फ़र्क हो सकता है। देर रात स्टेशन का बोर्ड ज़रूर देखें।',
+  'Train times are from the BMRCL timetable (August 2026). On Mondays the first trains start earlier, at about 4:15 am.': 'ट्रेनों का समय BMRCL के टाइमटेबल (अगस्त 2026) से है। सोमवार को पहली ट्रेनें जल्दी, लगभग सुबह 4:15 बजे शुरू होती हैं।'
 };
