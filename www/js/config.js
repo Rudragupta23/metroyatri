@@ -7,6 +7,13 @@ window.APP_CONFIG = {
      With no key, accounts are kept on the phone only, without verification. */
   firebaseApiKey: (window.APP_SECRETS || {}).firebaseApiKey || '',
 
+  /* Cloud sync of saved routes and bookings (Firestore). This is the Project ID shown in
+     Firebase console > Project settings. It is not a secret. Leave empty to switch sync off. */
+  firebaseProjectId: 'metroyatri-23',
+
+  /* Address and landmark search for door-to-door planning (OpenStreetMap Nominatim, light use only). */
+  geocoder: 'https://nominatim.openstreetmap.org/search',
+
   /* Street map shown behind the metro lines (needs internet).
      Default: OpenStreetMap's own tiles, which need no key and are meant for light use.
      For an app with many users, replace url with a tile provider that gives you a key. */
@@ -18,8 +25,11 @@ window.APP_CONFIG = {
 
   developer: {
     name: 'Rudra Gupta',
-    role: 'Full stack and data analytics developer',
-    about: 'B.Tech Computer Science and Engineering student at VIT Bhopal (2023 to 2027). I build web and mobile apps, and made MetroYatri to make metro travel simpler to plan.',
+    role: 'Full stack and Data Analytics Developer',
+    /* shown in the privacy policy as the contact; leave empty to point people to the GitHub page */
+    contactEmail: '',
+    repo: 'https://github.com/Rudragupta23/metroyatri',
+    about: 'B.Tech Computer Science and Engineering student at Vellore Institute of Technology. I build web and mobile apps and made MetroYatri to make metro travel simpler to plan.',
     links: [
       ['Portfolio', 'https://rudraguptaportfolio.live'],
       ['GitHub', 'https://github.com/Rudragupta23'],

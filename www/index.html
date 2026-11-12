@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<meta name="theme-color" content="#0E7C66">
+<meta name="theme-color" content="#1E4FA3">
 <meta name="color-scheme" content="light dark">
 <title>MetroYatri – Metro Guide</title>
 <link rel="icon" href="data:,">
@@ -12,12 +12,10 @@
 </head>
 <body>
 <div id="splash" aria-hidden="true">
-  <div class="logo">
-    <svg viewBox="0 0 120 150"><path d="M60 146 23 86h74z" fill="#fff"/><circle cx="60" cy="58" r="50" fill="#fff"/><rect x="33" y="29" width="54" height="54" rx="11" fill="#0E7C66"/><rect x="42" y="38" width="36" height="21" rx="5" fill="#fff"/><circle cx="47" cy="71" r="4.4" fill="#FFC107"/><circle cx="73" cy="71" r="4.4" fill="#FFC107"/></svg>
-  </div>
-  <b>MetroYatri</b>
-  <span>Delhi, Mumbai, Bengaluru and Chennai</span>
-  <div class="track"><i></i><i></i><i></i><i></i><em></em></div>
+  <svg class="mark" viewBox="0 0 120 120"><circle class="ring" cx="60" cy="60" r="47" fill="none" stroke="#1E4FA3" stroke-width="12" stroke-linecap="round" pathLength="100"/><path class="m" d="M34 84V36h14l12 21 12-21h14v48H73V58L60 80 47 58v26z" fill="#E5322D"/></svg>
+  <b><i>M</i><i>e</i><i>t</i><i>r</i><i>o</i><i>Y</i><i>a</i><i>t</i><i>r</i><i>i</i></b>
+  <span>Metro guide for 7 Indian cities</span>
+  <div class="dots"><i></i><i></i><i></i></div>
 </div>
 <div id="app">
   <main id="view" tabindex="-1"></main>
@@ -37,11 +35,20 @@
 <script src="js/data-chennai.js"></script>
 <script src="js/data-bengaluru.js"></script>
 <script src="js/data-mumbai.js"></script>
+<script src="js/data-hyderabad.js"></script>
+<script src="js/data-kolkata.js"></script>
+<script src="js/data-pune.js"></script>
 <script src="js/cities.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/lang-hi.js"></script>
+<script src="js/lang-hi-city.js"></script>
+<script src="js/names-hi.js"></script>
 <script src="js/vendor/qrcode.js"></script>
 <script src="js/vendor/leaflet/leaflet.js"></script>
 <script src="js/engine.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/native.js"></script>
+<script src="js/sync.js"></script>
 <script src="js/map.js"></script>
 <script src="js/app.js"></script>
 </body>

@@ -62,6 +62,7 @@ window.Auth = (function () {
 
   var A = {
     cloud: cloud,
+    token: token,
     current: function () {
       var s = session(); if (!s) return null;
       if (s.mode === 'cloud' && !cloud) return null;
@@ -137,7 +138,7 @@ window.Auth = (function () {
     remove: function () {
       var u = A.current(); if (!u) return Promise.resolve();
       function wipe() { store.set('profile.' + u.key, {}); store.set('tickets.' + u.key, []); save(null); }
-      if (u.mode === 'cloud') return token().then(function (t) { return call('delete', { idToken: t }); }).then(wipe);
+      if (u.mode === 'cloud') return (window.Sync ? window.Sync.wipe() : Promise.resolve()).then(token).then(function (t) { return call('delete', { idToken: t }); }).then(wipe);
       var users = store.get('users', {}); delete users[u.key]; store.set('users', users); wipe();
       return Promise.resolve();
     }

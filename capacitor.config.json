@@ -2,7 +2,7 @@
   "appId": "com.metroyatri.delhi",
   "appName": "MetroYatri",
   "webDir": "www",
-  "appendUserAgent": "MetroYatri/1.2 (+https://github.com/Rudragupta23/metroyatri)",
+  "appendUserAgent": "MetroYatri/2.0 (+https://github.com/Rudragupta23/metroyatri)",
   "android": {
     "backgroundColor": "#171A21"
   }

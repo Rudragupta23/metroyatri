@@ -34,7 +34,7 @@
       var dot = L.circleMarker([st.lat, st.lon], { renderer: self.rDots, radius: major ? 5 : 3.5, weight: major ? 2.5 : 2, color: major ? '#171A21' : engine.lines[st.lines[0]].color, fillColor: '#fff', fillOpacity: 1 }).addTo(map);
       dot.on('click', function () { if (self.opts.onStation) self.opts.onStation(id); });
       self.dots[id] = { m: dot, major: major, color: dot.options.color };
-      L.marker([st.lat, st.lon], { interactive: false, keyboard: false, icon: L.divIcon({ className: 'mlb' + (major ? ' mj' : ''), html: '<span>' + esc(st.n) + '</span>', iconSize: [0, 0] }) })
+      L.marker([st.lat, st.lon], { interactive: false, keyboard: false, icon: L.divIcon({ className: 'mlb' + (major ? ' mj' : ''), html: '<span>' + esc(self.opts.name ? self.opts.name(id, st) : st.n) + '</span>', iconSize: [0, 0] }) })
         .addTo(self.labelTiers[major ? 0 : term ? 1 : 2]);
     });
     map.on('zoomend', function () { self.restyle(); });
@@ -112,7 +112,7 @@
         if (i === 0 && li > 0) return;
         var m = L.circleMarker([st.lat, st.lon], { renderer: self.rRoute, radius: endp ? 8 : chg ? 6.5 : 4, weight: endp ? 3 : chg ? 3 : 2, color: endp || chg ? '#171A21' : leg.color, fillColor: endp ? '#FFB300' : '#fff', fillOpacity: 1 }).addTo(g);
         m.on('click', function () { if (self.opts.onStation) self.opts.onStation(id); });
-        L.marker([st.lat, st.lon], { interactive: false, keyboard: false, icon: L.divIcon({ className: 'mlb rt ' + (endp || chg ? 'key' : 'mid'), html: '<span>' + esc(st.n) + '</span>', iconSize: [0, 0] }) }).addTo(g);
+        L.marker([st.lat, st.lon], { interactive: false, keyboard: false, icon: L.divIcon({ className: 'mlb rt ' + (endp || chg ? 'key' : 'mid'), html: '<span>' + esc(self.opts.name ? self.opts.name(id, st) : st.n) + '</span>', iconSize: [0, 0] }) }).addTo(g);
       });
     });
     map.fitBounds(L.latLngBounds(pts), { padding: [46, 46], animate: false });

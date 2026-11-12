@@ -73,17 +73,17 @@
       var a = st.n.split('|')[0], b = e.to.split('|')[0];
       var softJoin = cur && cur.lastLine !== e.line && cfg.soft[cur.lastLine + '|' + e.line] && cur.stations[cur.stations.length - 1] === a;
       if (!cur || (cur.lastLine !== e.line && !softJoin)) {
-        cur = { group: L[e.line].g, color: L[e.line].color, text: L[e.line].text, lines: [e.line], lastLine: e.line, stations: [a], km: 0, min: 0, segs: [] };
+        cur = { group: L[e.line].g, color: L[e.line].color, text: L[e.line].text, lines: [e.line], lastLine: e.line, stations: [a], km: 0, min: 0, segs: [], times: [0] };
         legs.push(cur);
       } else if (softJoin) { cur.lines.push(e.line); cur.lastLine = e.line; }
-      cur.stations.push(b); cur.km += e.km; cur.min += e.min; cur.segs.push(e.seg);
+      cur.stations.push(b); cur.km += e.km; cur.min += e.min; cur.segs.push(e.seg); cur.times.push(cur.min);
       cur.lastA = a; cur.lastB = b;
       km += e.km; min += e.min; segs.push(e.seg);
     });
     var self = this, P = cfg.premium;
     legs.forEach(function (leg) {
       leg.name = self.groupName(leg.group);
-      leg.towards = self.towards(leg);
+      leg.tw = self.towards(leg);
       leg.from = leg.stations[0]; leg.to = leg.stations[leg.stations.length - 1];
       leg.note = leg.lines.map(function (l) { return L[l].note; }).filter(Boolean)[0] || '';
     });
@@ -94,17 +94,18 @@
 
   Engine.prototype.groupName = function (g) { return this.cfg.groupNames[g] || g; };
 
+  /* where the train is heading: { ring: true, next: id } or { ids: [terminal station ids] } */
   Engine.prototype.towards = function (leg) {
-    var S = this.data.stations, cfg = this.cfg, line = this.lines[leg.lastLine], st = line.st;
+    var cfg = this.cfg, line = this.lines[leg.lastLine], st = line.st;
     var ia = st.indexOf(leg.lastA), ib = st.indexOf(leg.lastB), n = st.length;
-    if (line.loop) return 'ring train, next stop ' + S[leg.stations[1]].n;
+    if (line.loop) return { ring: true, next: leg.stations[1] };
     var dir = ib - ia > 0 ? 1 : -1;
     var t = cfg.trunk[leg.lastLine];
     if (t && leg.lines.length === 1 && dir === t.dir) {
       var j = st.indexOf(t.at);
-      if ((dir > 0 && ib <= j) || (dir < 0 && ib >= j)) return 'towards ' + t.text;
+      if ((dir > 0 && ib <= j) || (dir < 0 && ib >= j)) return { ids: t.ids };
     }
-    return 'towards ' + (cfg.term[leg.lastLine + '|' + dir] || S[dir > 0 ? st[n - 1] : st[0]].n);
+    return { ids: [cfg.term[leg.lastLine + '|' + dir] || (dir > 0 ? st[n - 1] : st[0])] };
   };
 
   Engine.prototype.premiumOnly = function (id) {

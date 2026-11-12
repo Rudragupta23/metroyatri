@@ -11,8 +11,8 @@ window.CITIES = {
     card: { pct: 10, label: 'with smart card' },
     xferMin: 7,
     soft: { 'blue|blueb': 1, 'blueb|blue': 1, 'green|greenb': 1, 'greenb|green': 1 },
-    trunk: { blue: { at: 'yamuna-bank', dir: 1, text: 'Noida Electronic City or Vaishali' }, green: { at: 'ashok-park-main', dir: -1, text: 'Inderlok or Kirti Nagar' } },
-    term: { 'blueb|-1': 'Dwarka Sector 21', 'greenb|1': 'Brigadier Hoshiyar Singh' },
+    trunk: { blue: { at: 'yamuna-bank', dir: 1, ids: ['noida-electronic-city', 'vaishali'] }, green: { at: 'ashok-park-main', dir: -1, ids: ['inderlok', 'kirti-nagar'] } },
+    term: { 'blueb|-1': 'dwarka-sector-21', 'greenb|1': 'brigadier-hoshiyar-singh' },
     premium: {
       line: 'airport', name: 'Airport Express',
       order: ['new-delhi', 'shivaji-stadium', 'dhaula-kuan', 'delhi-aerocity', 'indira-gandhi-international-airport', 'dwarka-sector-21', 'yashobhoomi-dwarka-sector-25'],
@@ -186,6 +186,125 @@ window.CITIES = {
       ['Nehru Science Centre', 'Science Centre'], ['Mumbai Central railway station', 'Jagannath Shankar Sheth'], ['Dadar', 'Dadar'],
       ['Bandra Kurla Complex', 'Bandra Kurla Complex'], ['Airport Terminal 2 (international)', 'CSMIA - T2'], ['Airport Terminal 1 (domestic)', 'CSMIA - T1'],
       ['Sanjay Gandhi National Park', 'Rashtriya Udyan'], ['Andheri railway station', 'Andheri'], ['Ghatkopar railway station', 'Ghatkopar'], ['Versova', 'Versova']
+    ]
+  },
+
+  hyderabad: {
+    id: 'hyderabad', name: 'Hyderabad', system: 'Hyderabad Metro', operator: 'Hyderabad Metro Rail', checked: '12 Nov 2026',
+    center: null, zoom: null,
+    groups: ['red', 'blue', 'green'],
+    groupNames: { red: 'Red Line', blue: 'Blue Line', green: 'Green Line' },
+    slabs: [[2, 11, 11], [4, 17, 17], [6, 28, 28], [9, 37, 37], [12, 47, 47], [15, 51, 51], [18, 56, 56], [21, 61, 61], [24, 65, 65], [Infinity, 69, 69]],
+    fareSince: 'May 2025', holidayFares: false,
+    card: { pct: 10, label: 'with smart card' },
+    xferMin: 6, soft: {}, trunk: {}, term: {}, premium: null,
+    official: { buttons: [
+      ['Book on Hyderabad Metro WhatsApp (83411 46468)', 'https://wa.me/918341146468?text=Hi'],
+      ['Get the T-Savaari app', 'https://play.google.com/store/search?q=TSavaari%20Hyderabad%20Metro&c=apps']
+    ], site: 'https://www.ltmetro.com/' },
+    helplines: [['Emergency', '112']],
+    timings: 'Trains run from about 6 am to 11 pm. First and last trains differ by station.',
+    fareNotes: [
+      ['Smart card', '10% off every journey with the metro smart card.'],
+      ['Official fare table', 'Hyderabad Metro sets fares station to station. This app works them out from the distance bands of May 2025, so confirm the fare at the station or in the T-Savaari app.']
+    ],
+    about: [
+      ['What is included', '56 stations on the Red Line (Miyapur to LB Nagar), the Blue Line (Nagole to Raidurg) and the Green Line (JBS Parade Ground to MG Bus Station).'],
+      ['What is not included', 'MMTS suburban trains have separate tickets and are not included. Phase 2 lines, including the airport line, are added in app updates once they open.'],
+      ['Where the data comes from', 'There is no open data feed for Hyderabad Metro, so station positions were entered by hand and are approximate. Distances are scaled to each line\'s official length, and journey times assume an average speed of 33 km/h.']
+    ],
+    tips: [
+      'Ameerpet is where the Red and Blue lines meet. MG Bus Station is where the Red and Green lines meet.',
+      'A smart card saves 10% on every journey.',
+      'For HITEC City and Raidurg, take the Blue Line towards Raidurg.',
+      'Parade Ground on the Blue Line and JBS Parade Ground on the Green Line are one interchange.',
+      'Carrying luggage? Choose Fewest changes to avoid long walks between platforms.'
+    ],
+    places: [
+      ['HITEC City and Cyber Towers', 'HITEC City'], ['Mindspace and Raidurg tech parks', 'Raidurg'], ['Durgam Cheruvu cable bridge', 'Durgam Cheruvu'],
+      ['Secunderabad railway station', 'Secunderabad East'], ['Hyderabad Deccan (Nampally) railway station', 'Nampally'], ['MGBS bus station', 'MG Bus Station'],
+      ['Jubilee Bus Station', 'JBS Parade Ground'], ['Uppal cricket stadium', 'Stadium'], ['Birla Mandir and Assembly', 'Assembly'],
+      ['Hussain Sagar and Necklace Road', 'Khairatabad'], ['KBR Park', 'Jubilee Hills Check Post'], ['Ameerpet market', 'Ameerpet'], ['Dilsukhnagar market', 'Dilsukhnagar']
+    ]
+  },
+
+  kolkata: {
+    id: 'kolkata', name: 'Kolkata', system: 'Kolkata Metro', operator: 'Metro Railway Kolkata', checked: '12 Nov 2026',
+    center: null, zoom: null,
+    groups: ['blue', 'green', 'purple', 'orange', 'yellow'],
+    groupNames: { blue: 'Blue Line', green: 'Green Line', purple: 'Purple Line', orange: 'Orange Line', yellow: 'Yellow Line' },
+    slabs: [[2, 5, 5], [5, 10, 10], [10, 15, 15], [20, 20, 20], [Infinity, 25, 25]],
+    fareGroups: [
+      { id: 'mr', name: 'Blue, Purple, Orange and Yellow lines', lines: ['blue', 'purple', 'orange', 'yellow'], slabs: [[2, 5], [5, 10], [10, 15], [20, 20], [Infinity, 25]] },
+      { id: 'ew', name: 'Green Line', lines: ['green'], slabs: [[2, 5], [5, 10], [10, 20], [Infinity, 30]] }
+    ],
+    fareSince: 'the current fare tables', holidayFares: false, card: null,
+    xferMin: 6, soft: {}, trunk: {}, term: {}, premium: null,
+    official: { buttons: [
+      ['Get the Aamar Kolkata Metro app', 'https://play.google.com/store/search?q=Aamar%20Kolkata%20Metro&c=apps']
+    ], site: 'https://mtp.indianrailways.gov.in/' },
+    helplines: [['Emergency', '112']],
+    timings: 'Trains run from about 6:50 am to 10:40 pm. Timings differ by line and are shorter on Sundays.',
+    fareNotes: [
+      ['Journeys across lines', 'The Green Line has its own fare table. For a journey that uses the Green Line and another line, the app adds the two parts, so treat that fare as an estimate.']
+    ],
+    about: [
+      ['What is included', '55 stations on the Blue, Green, Purple, Orange and Yellow lines. It includes the Green Line under the Hooghly between Howrah Maidan and Salt Lake Sector V, and the Yellow Line to the airport, both opened in full on 22 August 2025.'],
+      ['What is not included', 'Blue Line trains end at Shahid Khudiram while Kavi Subhash is rebuilt. The Purple Line and the Orange Line are not joined to the other lines yet, so the app cannot plan journeys between them and the rest of the network. Suburban trains are not included.'],
+      ['Where the data comes from', 'There is no open data feed for Kolkata Metro, so station positions were entered by hand and are approximate. Distances are scaled to each line\'s official length, and journey times assume an average speed of 33 km/h.']
+    ],
+    tips: [
+      'Esplanade is where the Blue and Green lines meet.',
+      'For the airport, change at Noapara to the Yellow Line and get off at Jai Hind.',
+      'The Green Line runs under the Hooghly river between Howrah and Mahakaran.',
+      'Blue Line trains end at Shahid Khudiram for now, not at Kavi Subhash.',
+      'For Howrah railway station, use the Green Line station inside the station complex.'
+    ],
+    places: [
+      ['Howrah railway station', 'Howrah'], ['Sealdah railway station', 'Sealdah'], ['Victoria Memorial', 'Rabindra Sadan'], ['Park Street and Indian Museum', 'Park Street'],
+      ['New Market and Eden Gardens', 'Esplanade'], ['Kalighat Temple', 'Kalighat'], ['Dakshineswar Temple', 'Dakshineswar'], ['College Street', 'Central'],
+      ['BBD Bagh', 'Mahakaran'], ['Salt Lake Sector V IT hub', 'Salt Lake Sector V'], ['Salt Lake Stadium', 'Salt Lake Stadium'], ['Science City', 'Barun Sengupta'],
+      ['Kolkata airport', 'Jai Hind'], ['Rabindra Sarobar lake', 'Rabindra Sarobar']
+    ]
+  },
+
+  pune: {
+    id: 'pune', name: 'Pune', system: 'Pune Metro', operator: 'the metro operators', checked: '12 Nov 2026',
+    center: null, zoom: null,
+    groups: ['purple', 'aqua', 'pink'],
+    groupNames: { purple: 'Purple Line', aqua: 'Aqua Line', pink: 'Pink Line' },
+    slabs: [[2, 10, 10], [4, 15, 15], [8, 20, 20], [13, 25, 25], [17, 30, 30], [Infinity, 35, 35]],
+    fareGroups: [
+      { id: 'maha', name: 'Purple and Aqua lines', lines: ['purple', 'aqua'], slabs: [[2, 10], [4, 15], [8, 20], [13, 25], [17, 30], [Infinity, 35]] },
+      { id: 'pink', name: 'Pink Line', lines: ['pink'], slabs: [[2, 12], [5, 22], [9, 32], [13, 42], [18, 52], [Infinity, 62]] }
+    ],
+    fareSince: 'the opening of each line', holidayFares: false, card: null,
+    xferMin: 7, soft: {}, trunk: {}, term: {}, premium: null,
+    official: { buttons: [
+      ['Get the Pune Metro app', 'https://play.google.com/store/search?q=Pune%20Metro&c=apps']
+    ], site: 'https://www.punemetrorail.org/' },
+    helplines: [['Emergency', '112']],
+    timings: 'Trains run from about 6 am to 11 pm. Timings differ by line.',
+    fareNotes: [
+      ['Fares here are estimates', 'Pune Metro publishes fares station to station. The distance bands in this app are worked out from the published lowest and highest fares (₹10 to ₹35 on the Purple and Aqua lines, ₹12 to ₹62 on the Pink Line), so a fare can be one band out.'],
+      ['Two operators', 'The Pink Line is run by a different operator from the Purple and Aqua lines. The app adds the fare of each part.']
+    ],
+    about: [
+      ['What is included', '45 stations on the Purple Line (PCMC Bhavan to Swargate), the Aqua Line (Vanaz to Ramwadi) and the Pink Line from Maan to District Court, which opened on 4 November 2026.'],
+      ['What is not included', 'Six Pink Line stations between Balewadi and Shivaji Nagar are not open yet and are left out. Extensions to Nigdi and Katraj are added in app updates once they open.'],
+      ['Where the data comes from', 'There is no open data feed for Pune Metro, so station positions were entered by hand and are approximate. Distances are scaled to each line\'s official length, and journey times assume an average speed of 33 km/h.']
+    ],
+    tips: [
+      'District Court is where all three lines meet.',
+      'For Hinjawadi IT Park, take the Pink Line towards Maan.',
+      'For Pune railway station, use the Aqua Line.',
+      'For Swargate bus stand, take the Purple Line to its last stop.',
+      'Some Pink Line stations are not open yet, so trains pass through them without stopping.'
+    ],
+    places: [
+      ['Pune railway station', 'Pune Railway Station'], ['Swargate bus stand', 'Swargate'], ['Dagdusheth Ganpati Temple', 'Kasba Peth'], ['Shaniwar Wada', 'PMC Bhavan'],
+      ['Mandai market', 'Mandai'], ['Deccan and FC Road', 'Deccan Gymkhana'], ['Hinjawadi IT Park', 'Hinjawadi Phase I'], ['Savitribai Phule Pune University', 'Savitribai Phule Pune University'],
+      ['Balewadi sports complex', 'Sports Complex Mahalunge'], ['Koregaon Park', 'Bund Garden'], ['Phoenix Marketcity', 'Ramwadi'], ['Pimpri', 'PCMC Bhavan'], ['Kothrud', 'Vanaz']
     ]
   }
 };

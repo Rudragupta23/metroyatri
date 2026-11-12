@@ -43,6 +43,43 @@ jobs:
       - name: Rename APK
         run: cp android/app/build/outputs/apk/debug/app-debug.apk MetroYatri.apk
 
+      # ---- signed release build: runs only when the four signing secrets exist ----
+      - name: Check for the signing key
+        id: signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.jks"
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No signing key in repository secrets. Skipping the release build."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build signed release APK and Play Store bundle
+        if: steps.signing.outputs.ready == 'true'
+        working-directory: android
+        env:
+          KEYSTORE_FILE: ${{ runner.temp }}/release.jks
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          ./gradlew assembleRelease bundleRelease --no-daemon --stacktrace
+          cp app/build/outputs/apk/release/app-release.apk ../MetroYatri-release.apk
+          cp app/build/outputs/bundle/release/app-release.aab ../MetroYatri-release.aab
+          rm -f "$RUNNER_TEMP/release.jks"
+
+      - name: Upload signed release (Actions artifact)
+        if: steps.signing.outputs.ready == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: MetroYatri-signed-release
+          path: |
+            MetroYatri-release.apk
+            MetroYatri-release.aab
+
       - name: Upload APK (Actions artifact)
         uses: actions/upload-artifact@v4
         with:
@@ -55,5 +92,9 @@ jobs:
         with:
           tag_name: build-${{ github.run_number }}
           name: MetroYatri build ${{ github.run_number }}
-          body: Install MetroYatri.apk on an Android phone (Android 7 or newer).
-          files: MetroYatri.apk
+          body: MetroYatri.apk is the test build. MetroYatri-release.apk and .aab (when present) are signed for the Play Store.
+          fail_on_unmatched_files: false
+          files: |
+            MetroYatri.apk
+            MetroYatri-release.apk
+            MetroYatri-release.aab

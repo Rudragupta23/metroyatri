@@ -1,94 +1,133 @@
-# MetroYatri – metro guide for Delhi, Mumbai, Bengaluru and Chennai (Android app)
+# MetroYatri
 
-An independent Android app for Delhi Metro, Mumbai Metro, Namma Metro (Bengaluru) and Chennai Metro, developed by Rudra Gupta: journey planner with
-fare, distance and time, street map with the route highlighted along the line, station details,
-verified accounts with profile photo, saved routes, and practice ticket booking with a hand-off to the
-operators' official ticket channels.
+**A metro guide for 7 Indian cities, built as an installable Android app.**
 
-Not made by, linked to or approved by any metro operator.
+Plan a journey, see the fare and time, follow the route on a map, and get an alert one stop before you get off. Works in English and Hindi.
 
-## Get the APK (no tools needed on your computer)
+> MetroYatri is an independent app. It is not made by, linked to or approved by any metro operator.
 
-1. Create a new **empty** repository on GitHub (no README).
-2. Upload everything in this folder to it, including the hidden `.github` folder.
-   With git:
-   ```
-   git init
-   git add -A
-   git commit -m "MetroYatri"
-   git branch -M main
-   git remote add origin https://github.com/<you>/<repo>.git
-   git push -u origin main
-   ```
-3. Open the repository's **Actions** tab. The "Build Android APK" run starts by itself and takes about 5 minutes.
-4. When it turns green, open the **Releases** page of the repository and download `MetroYatri.apk`
-   (it is also attached to the run as the "MetroYatri-apk" artifact).
-5. Copy the APK to an Android phone (Android 7 or newer), open it and allow "install from this source".
+---
 
-## Build on your own computer instead
+## Cities
 
-Needs Node 22, JDK 21 and Android Studio (SDK 36).
+| City | Network | Stations |
+| --- | --- | --- |
+| Delhi | Delhi Metro | 243 |
+| Bengaluru | Namma Metro | 83 |
+| Mumbai | Mumbai Metro | 77 |
+| Hyderabad | Hyderabad Metro | 56 |
+| Kolkata | Kolkata Metro | 55 |
+| Chennai | Chennai Metro | 51 |
+| Pune | Pune Metro | 45 |
+
+Switch city at any time. Stations, fares, map, places and ticket links all follow the city you choose.
+
+---
+
+## Features
+
+**Journey planning**
+- Fastest route, fewest changes or shortest distance
+- Fare, distance, travel time, number of stops and changes
+- Door-to-door planning: type an address or landmark and get the nearest stations with walking time
+- Nearest station from your location
+- Monthly cost calculator
+
+**On the journey**
+- Arrival alert: the phone vibrates one stop before you get off or change trains
+- Works underground, because it uses the planned times and not GPS
+- Daily reminder for your regular journey
+
+**Map and stations**
+- Metro lines drawn over a real street map, with your route highlighted
+- Station pages with lines, next stations and nearby places
+- Popular places and the station to get off at
+
+**Account**
+- Email accounts with verification (Firebase Authentication)
+- Saved routes and bookings sync across phones (Cloud Firestore)
+- Profile photo and editable name
+
+**More**
+- Share a route as a picture or as text
+- English and Hindi, including all station names
+- Dark mode
+- Practice ticket booking, clearly marked as not valid for travel, with links to each operator's official ticket channels
+- Privacy policy inside the app
+
+---
+
+## Tech stack
+
+| Part | Used |
+| --- | --- |
+| App shell | Capacitor 8 (Android) |
+| Interface | HTML, CSS and plain JavaScript, no framework |
+| Map | Leaflet with OpenStreetMap tiles |
+| Address search | OpenStreetMap Nominatim |
+| Accounts | Firebase Authentication (REST) |
+| Sync | Cloud Firestore (REST) |
+| Phone features | Capacitor Local Notifications, Share, Filesystem, App |
+| Build | GitHub Actions |
+
+---
+
+## Project structure
 
 ```
-npm ci
-npx cap sync android
-cd android && ./gradlew assembleDebug
+metroyatri/
+├── www/                     the app itself
+│   ├── index.html
+│   ├── css/app.css
+│   ├── fonts/
+│   └── js/
+│       ├── app.js           screens and app logic
+│       ├── engine.js        route and fare calculation
+│       ├── map.js           map screen
+│       ├── auth.js          accounts
+│       ├── sync.js          Firestore sync
+│       ├── native.js        notifications, sharing, vibration
+│       ├── i18n.js          language switching
+│       ├── lang-hi.js       Hindi screen text
+│       ├── lang-hi-city.js  Hindi city text
+│       ├── names-hi.js      Hindi station names (generated)
+│       ├── cities.js        settings for each city
+│       ├── config.js        app settings
+│       └── data-*.js        network data for each city
+├── android/                 Android project
+├── tools/                   scripts that build the data files
+├── docs/privacy-policy.html public privacy policy
+└── .github/workflows/       automatic APK build
 ```
-The APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`.
-`npx cap open android` opens the project in Android Studio.
 
-## Putting it on the Play Store
+---
 
-The workflow builds a debug APK for installing directly. For the Play Store you need a Google Play
-developer account, your own signing key and a release bundle (`./gradlew bundleRelease` after adding a
-signing config in `android/app/build.gradle`). Keep the app's "not an official DMRC app" wording.
+## Download the app
 
-## Switch on verified accounts (email verification)
+1. Open the **Releases** page of this repository.
+2. Download `MetroYatri.apk` from the latest build.
+3. Open it on an Android phone (Android 7 or newer) and allow "install from this source".
 
-Out of the box, accounts are kept on the phone and are not verified. To make every account prove it owns
-its email address (free):
 
-1. Create a Firebase project, enable **Authentication > Sign-in method > Email/Password**, add a web app
-   and copy its `apiKey`.
-2. On GitHub open the repository, then **Settings > Secrets and variables > Actions > New repository secret**.
-   Name: `FIREBASE_API_KEY`. Secret: the key. The build writes it into the app; it is never stored in the code.
-3. Push any change (or run the workflow by hand) to build an APK with verified accounts.
+---
 
-For local builds, copy `.env.example` to `.env`, put the key in it and run `npm run sync`.
-`.env` and `www/js/secrets.js` are ignored by git.
+## Data and accuracy
 
-Note: the key is still inside the built APK, as with every Firebase app. Restrict it in Google Cloud Console
-(API restrictions: Identity Toolkit API and Token Service API only).
+- **Delhi:** distances and running times from the DMRC open transit data feed.
+- **Bengaluru:** community BMRCL GTFS feed, with the official station-to-station fare table.
+- **Chennai, Mumbai, Hyderabad, Kolkata, Pune:** no open data feed exists, so station positions were entered by hand and are approximate.
+- Fares are worked out from each operator's published distance bands and can be one band out near a boundary. Always confirm at the station or in the official app.
+- Arrival alerts use planned times, not live train positions.
 
-## Where things are
+---
 
-| Path | What |
-|---|---|
-| `www/js/config.js` | Settings: street-map tile source, developer details shown in the app |
-| `tools/make-secrets.js`, `.env.example` | Puts the Firebase key into the build without committing it |
-| `www/js/cities.js` | Per-city fares, ticket links, helplines, places |
-| `www/js/data-<city>.js` | Network data for each city (generated by `tools/`) |
-| `www/js/app.js`, `engine.js`, `map.js`, `auth.js` | Screens, routing and fares, map, accounts |
-| `android/` | Android project (Capacitor 8) with icons, splash screen and permissions |
-| `.github/workflows/build-apk.yml` | Builds the APK on GitHub |
+## Privacy
 
-## Data (checked 11 Nov 2026)
+- No adverts and no tracking.
+- Location is used only on the phone to find the nearest station. It is not stored or sent anywhere.
+- Accounts, saved routes and practice bookings are stored in Firebase under the user's own account.
+- Users can delete their account and data from inside the app.
 
-- **Delhi:** 243 stations on 9 lines, including the Pink Line ring and Magenta Line Majlis Park–Deepali Chowk
-  section (8 Mar 2026) and station renames up to 2026. Distances and running times come from the DMRC GTFS
-  feed (four wrong positions corrected); newer sections use published corridor lengths. Fares: bands in force
-  since 25 Aug 2025. Airport Express fares are estimates.
-- **Chennai:** 51 stations on the Blue, Green and Yellow lines (Yellow Line Poonamallee Bypass–Vadapalani opened
-  11 Oct 2026). CMRL has no open feed, so station positions were entered by hand and are approximate;
-  distances are scaled to published section lengths. Fares: ₹10–₹50 distance bands, 20% off with card or mobile QR.
-- **Bengaluru:** 83 stations on the Purple, Green and Yellow lines, from the community BMRCL GTFS feed
-  (github.com/Vonter/bmrcl-gtfs, Aug 2026). Fares come from that feed's station-to-station table (₹10–₹90).
-  The Pink Line was not open when checked (12 Nov 2026).
-- **Mumbai:** 77 stations on Lines 1, 2A, 2B, 3, 7 and 9. No open feed exists, so station positions were
-  entered by hand and are approximate. Three operators with separate tickets; the app adds their fares.
-  Line 2B (Mandale–Chembur) is not yet joined to the other lines.
-- **Street map:** OpenStreetMap tiles; needs internet. Their servers are for light use only, so for a published
-  app with many users switch `tiles.url` in `config.js` to a provider that gives you a key.
+Full policy: [`docs/privacy-policy.html`](docs/privacy-policy.html)
 
-To add a city: write a `tools/build_<city>.py` like the Chennai one, add its entry to `www/js/cities.js`,
-and include the new `data-<city>.js` in `www/index.html`.
+---
