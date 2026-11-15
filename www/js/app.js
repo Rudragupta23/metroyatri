@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   var CFG = window.APP_CONFIG, CITIES = window.CITIES, NET = window.NET, Auth = window.Auth;
-  var T = window.T, I18N = window.I18N, Native = window.Native, Sync = window.Sync, VERSION = '2.3';
+  var T = window.T, I18N = window.I18N, Native = window.Native, Sync = window.Sync, VERSION = '2.4';
   var $view = document.getElementById('view'), $sheet = document.getElementById('sheet'), $toast = document.getElementById('toast');
   var store = {
     get: function (k, d) { try { var v = localStorage.getItem('my.' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -23,10 +23,10 @@
     IDS.forEach(function (i) { BYNAME[S[i].n] = i; });
     store.set('city', id);
   }
-  var state = { from: null, to: null, place: { from: null, to: null }, mode: 'fast', day: 'auto', premium: false, route: null, open: {}, mapRoute: null, mapFocus: null, next: null };
+  var state = { from: null, to: null, place: { from: null, to: null }, mode: 'fast', day: 'auto', premium: false, route: null, open: {}, mapRoute: null, mapFocus: null, mapPick: null, next: null };
   function switchCity(id) {
     loadCity(id);
-    state.from = state.to = state.route = state.mapRoute = state.mapFocus = null; state.place = { from: null, to: null }; state.open = {}; state.premium = false;
+    state.from = state.to = state.route = state.mapRoute = state.mapFocus = state.mapPick = null; state.place = { from: null, to: null }; state.open = {}; state.premium = false;
     stFilter.q = ''; stFilter.g = '';
   }
 
@@ -588,11 +588,36 @@
     $view.innerHTML = '<div class="mapwrap' + (r ? ' routed' : '') + '"><div id="mapwrap" class="mapbox"></div><div class="maptop"><button class="search" data-act="map-search" style="text-align:left">' + SEARCH_ICON + '<span style="color:var(--soft)">' + esc(T('Find a {0} station', T(C.name))) + '</span></button></div>' +
       '<div class="legend">' + GROUPS.map(function (g) { return '<span><i style="background:' + GCOL[g] + '"></i>' + esc(gshort(g)) + '</span>'; }).join('') + '</div>' +
       '<div class="zoom"><button data-act="tiles" class="' + (tiles ? 'on' : '') + '" aria-label="' + T('Street map on or off') + '"><svg viewBox="0 0 24 24"><path d="M12 3 3 8l9 5 9-5-9-5z"/><path d="m3 13 9 5 9-5"/></svg></button><button data-act="locate" aria-label="' + T('Show where I am') + '"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button><button data-act="zin" aria-label="' + T('Zoom in') + '">+</button><button data-act="zout" aria-label="' + T('Zoom out') + '">−</button></div></div>' +
-      (r ? '<div class="routebar"><div class="grow"><b>' + esc(T('{0} to {1}', sn(r.from), sn(r.to))) + '</b><small>₹' + fareNow(r) + ', ' + T('{0} km', r.km.toFixed(1)) + ', ' + T('{0} min', r.min) + ', ' + cnt(r.changes, '{0} change', '{0} changes') + '</small></div><button data-act="clear-route">' + T('Clear') + '</button></div>' : '');
-    map = new window.MetroMap(document.getElementById('mapwrap'), D, E, { onStation: stationSheet, tiles: tiles, name: function (id) { return sn(id); },
+      '<div class="routebar" id="mapbar"></div>';
+    map = new window.MetroMap(document.getElementById('mapwrap'), D, E, { onStation: mapTap, tiles: tiles, name: function (id) { return sn(id); },
       onTilesFailed: function (offline) { toast(T(offline ? 'No internet. Showing metro lines without the street map.' : 'The street map could not load. Metro lines are still shown.')); }, center: C.center ? { at: C.center, zoom: C.zoom } : null });
     if (r) map.setRoute(r);
     else if (state.mapFocus) { map.focus(state.mapFocus); state.mapFocus = null; }
+    if (!r && state.mapPick && S[state.mapPick]) map.pick(state.mapPick); else state.mapPick = null;
+    mapBar();
+  }
+  /* bar under the map: a hint, then the chosen start, then the route between the two tapped stations */
+  function mapBar() {
+    var bar = document.getElementById('mapbar'); if (!bar) return;
+    var r = state.mapRoute, p = state.mapPick, wrap = bar.parentNode.querySelector('.mapwrap');
+    if (r) bar.innerHTML = '<div class="grow"><b>' + esc(T('{0} to {1}', sn(r.from), sn(r.to))) + '</b><small>₹' + fareNow(r) + ', ' + T('{0} km', r.km.toFixed(1)) + ', ' + T('{0} min', r.min) + ', ' + cnt(r.stops, '{0} station', '{0} stations') + ', ' + cnt(r.changes, '{0} change', '{0} changes') + '</small></div>' +
+      '<button class="main" data-act="map-details">' + T('Details') + '</button><button data-act="clear-route">' + T('Clear') + '</button>';
+    else if (p) bar.innerHTML = '<span class="pin"></span><div class="grow"><b>' + esc(T('From {0}', sn(p))) + '</b><small class="go">' + T('Now tap your destination station') + '</small></div>' +
+      '<button data-act="map-station">' + T('Station') + '</button><button data-act="map-unpick">' + T('Cancel') + '</button>';
+    else bar.innerHTML = '<div class="grow"><small class="tipline">' + T('Tap a station to start, then tap your destination to see the route.') + '</small></div>';
+    bar.className = 'routebar' + (p && !r ? ' picking' : '');
+    if (wrap) wrap.classList.toggle('routed', !!r);
+    if (map && map.map) setTimeout(function () { if (map && map.map) map.map.invalidateSize(); }, 30);
+  }
+  function mapTap(id) {
+    if (!map) return;
+    if (state.mapRoute) { state.mapRoute = null; map.setRoute(null); state.mapPick = id; map.pick(id); return mapBar(); }
+    if (!state.mapPick) { state.mapPick = id; map.pick(id); return mapBar(); }
+    if (state.mapPick === id) return stationSheet(id);
+    var from = state.mapPick, r = E.plan(from, id, 'fast', {});
+    if (!r) { toast(T('No metro route joins {0} and {1} yet.', sn(from), sn(id))); return; }
+    setEnd('from', from); setEnd('to', id); state.mode = 'fast'; state.premium = false;
+    state.mapPick = null; map.pick(null); state.mapRoute = r; map.setRoute(r); mapBar();
   }
   function startGo(id) { return '<button class="btn alt" data-act="set-from" data-id="' + id + '">' + T('Start here') + '</button><button class="btn" data-act="set-to" data-id="' + id + '">' + T('Go here') + '</button>'; }
   function stationSheet(id) {
@@ -991,13 +1016,16 @@
     swap: function () { var a = state.from, p = state.place.from; state.from = state.to; state.to = a; state.place.from = state.place.to; state.place.to = p; state.open = {}; rerender(); },
     'clear-recent': function () { store.del('recent.' + C.id); var q = document.getElementById('pq'), l = document.getElementById('plist'); if (l) l.innerHTML = pickerList(q ? q.value : ''); toast(T('Recent searches cleared')); },
     'clear-journeys': function () { store.del('journeys.' + C.id); toast(T('Recent journeys cleared')); rerender(); },
-    'clear-plan': function () { state.from = state.to = state.route = state.mapRoute = null; state.place = { from: null, to: null }; state.open = {}; state.mode = 'fast'; $view.scrollTop = 0; route(); },
+    'clear-plan': function () { state.from = state.to = state.route = state.mapRoute = state.mapPick = null; state.place = { from: null, to: null }; state.open = {}; state.mode = 'fast'; $view.scrollTop = 0; route(); },
     mode: function (b) { state.mode = b.getAttribute('data-mode'); state.open = {}; state.fresh = true; rerender(); },
     day: function (b) { state.day = b.getAttribute('data-day'); rerender(); },
     premium: function () { state.premium = !state.premium; state.open = {}; rerender(); },
     'toggle-leg': function (b) { var k = b.getAttribute('data-key'); state.open[k] = !state.open[k]; rerender(); },
     'show-map': function () { state.mapRoute = state.route; go('#/map'); },
-    'clear-route': function () { state.mapRoute = null; rerender(); },
+    'clear-route': function () { state.mapRoute = null; state.mapPick = null; if (map) { map.setRoute(null); map.pick(null); map.fit(); mapBar(); } else rerender(); },
+    'map-unpick': function () { state.mapPick = null; if (map) map.pick(null); mapBar(); },
+    'map-station': function () { if (state.mapPick) stationSheet(state.mapPick); },
+    'map-details': function () { go('#/plan'); },
     book: function () { book.pax = 1; go('#/book'); },
     fav: function () {
       var r = state.route, f = favs(), n = f.filter(function (x) { return !(x[0] === C.id && x[1] === r.from && x[2] === r.to); });
@@ -1049,7 +1077,7 @@
     tiles: function (b) { var on = !store.get('tiles', true); store.set('tiles', on); b.classList.toggle('on', on); if (map) map.setTiles(on); toast(T(on ? 'Street map on' : 'Street map off')); },
     zin: function () { if (map) map.zoom(1); },
     zout: function () { if (map) map.zoom(-1); },
-    'map-search': function () { openPicker(T('Find a station'), function (id) { if (map) { map.focus(id); stationSheet(id); } }); },
+    'map-search': function () { openPicker(T('Find a station'), function (id) { if (!map) return; if (!state.mapRoute && (!state.mapPick || state.mapPick === id)) map.focus(id); if (state.mapPick !== id) mapTap(id); }); },
     'map-focus': function (b) { state.mapRoute = null; state.mapFocus = b.getAttribute('data-id'); go('#/map'); },
     'set-from': function (b) { setEnd('from', b.getAttribute('data-id')); toPlan(); },
     'set-to': function (b) { setEnd('to', b.getAttribute('data-id')); toPlan(); },
@@ -1144,7 +1172,7 @@
     el.appendChild(dot); setTimeout(function () { dot.remove(); }, 520);
   }, { passive: true });
   function later(fn, quick) { if (quick) return fn(); if (tapBusy) return; tapBusy = true; setTimeout(function () { tapBusy = false; fn(); }, TAP_MS); }
-  var QUICK = { 'clear-recent': 1, cost: 1, pax: 1, zin: 1, zout: 1, 'photo-close': 1, 'toggle-leg': 1 };
+  var QUICK = { 'clear-recent': 1, 'map-unpick': 1, 'clear-route': 1, cost: 1, pax: 1, zin: 1, zout: 1, 'photo-close': 1, 'toggle-leg': 1 };
   document.addEventListener('click', function (e) {
     var p = e.target.closest('[data-pick]');
     if (p && pickerCb) {
@@ -1190,7 +1218,7 @@
   document.documentElement.setAttribute('data-theme', theme);
   loadCity(store.get('city', 'delhi'));
   adoptFavs();
-  window.__app = { state: state, Auth: Auth, city: function () { return C.id; }, image: function () { return routeImage(state.route); }, tick: jTick };
+  window.__app = { state: state, Auth: Auth, city: function () { return C.id; }, image: function () { return routeImage(state.route); }, tick: jTick, map: function () { return map; } };
   tabsText(); route(true); jWatch();
   // saved routes and bookings follow the account
   Sync.onChange(function () { if (page() === 'more' && $sheet.hidden) rerender(); });

@@ -423,3 +423,14 @@ html.theme-fade,html.theme-fade *{transition:background-color .4s ease,color .4s
 .sec.split button{font-size:14px;font-weight:600;color:var(--soft);padding:4px 2px;background:none;border:0}
 .kv.sub{padding-top:0;margin-top:-4px;border-top:0}
 .kv.sub span,.kv.sub b{font-size:13.5px;color:var(--soft);font-weight:500}
+
+/* v2.4: map bar for choosing a route by tapping two stations */
+.routebar{min-height:62px}
+.routebar .tipline{font-size:14.5px;color:var(--soft)}
+.routebar .pin{flex:none;width:14px;height:14px;border-radius:50%;background:#FFB300;border:3px solid var(--ink)}
+.routebar.picking{border-top:2px solid #FFB300}
+.routebar .go{color:var(--ink);font-weight:600;animation:nudge 1.2s ease-in-out infinite}
+.routebar button.main{background:var(--ink);color:var(--card)}
+.routebar{gap:8px}
+@keyframes nudge{50%{opacity:.45}}
+@media (prefers-reduced-motion:reduce){.routebar .go{animation:none}}

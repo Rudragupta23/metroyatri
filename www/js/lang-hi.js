@@ -173,5 +173,10 @@ window.LANG_HI = {
   'Cards and passes': 'कार्ड और पास', 'Card price, where to recharge, day passes': 'कार्ड की कीमत, रिचार्ज कहां करें, दिन के पास',
   'Prices checked on {0}. Operators change them from time to time, so confirm at the station before you pay.': 'कीमतें {0} को जांची गईं। मेट्रो कंपनियां इन्हें समय-समय पर बदलती हैं, इसलिए पैसे देने से पहले स्टेशन पर पक्का कर लें।',
   'Last train times are from the DMRC open timetable data and can be a few minutes out. Check the station board late at night.': 'आखिरी ट्रेन का समय DMRC के खुले टाइमटेबल डेटा से है और इसमें कुछ मिनट का फ़र्क हो सकता है। देर रात स्टेशन का बोर्ड ज़रूर देखें।',
-  'Train times are from the BMRCL timetable (August 2026). On Mondays the first trains start earlier, at about 4:15 am.': 'ट्रेनों का समय BMRCL के टाइमटेबल (अगस्त 2026) से है। सोमवार को पहली ट्रेनें जल्दी, लगभग सुबह 4:15 बजे शुरू होती हैं।'
+  'Train times are from the BMRCL timetable (August 2026). On Mondays the first trains start earlier, at about 4:15 am.': 'ट्रेनों का समय BMRCL के टाइमटेबल (अगस्त 2026) से है। सोमवार को पहली ट्रेनें जल्दी, लगभग सुबह 4:15 बजे शुरू होती हैं।',
+
+  /* v2.4: choosing a route by tapping two stations on the map */
+  'From {0}': '{0} से', 'Now tap your destination station': 'अब वह स्टेशन दबाएं जहां जाना है', 'Station': 'स्टेशन', 'Details': 'पूरी जानकारी',
+  'Tap a station to start, then tap your destination to see the route.': 'शुरू करने के लिए कोई स्टेशन दबाएं, फिर जहां जाना है वह स्टेशन दबाएं और रास्ता देखें।',
+  'No metro route joins {0} and {1} yet.': '{0} और {1} के बीच अभी कोई मेट्रो रास्ता नहीं है।'
 };
