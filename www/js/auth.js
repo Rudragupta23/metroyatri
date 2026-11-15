@@ -132,7 +132,7 @@ window.Auth = (function () {
     },
     setPhoto: function (dataUrl) {
       var u = A.current(); if (!u) return;
-      var p = store.get('profile.' + u.key, {}); if (dataUrl) p.photo = dataUrl; else delete p.photo; store.set('profile.' + u.key, p);
+      var p = store.get('profile.' + u.key, {}); if (dataUrl) p.photo = dataUrl; else delete p.photo; p.photoAt = Date.now(); store.set('profile.' + u.key, p);
     },
     logout: function () { save(null); },
     remove: function () {

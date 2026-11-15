@@ -1,4 +1,4 @@
-/* Keeps saved routes and bookings in the user's own Firestore document (users/{uid}), so they follow the account.
+/* Keeps saved routes, bookings and the profile photo in the user's own Firestore document (users/{uid}), so they follow the account.
    Needs: a Firebase key (verified accounts), firebaseProjectId in config.js, and Firestore rules that let a user
    read and write only users/{their uid}. */
 window.Sync = (function () {
@@ -12,7 +12,9 @@ window.Sync = (function () {
   var timer = null, busy = false, again = false, listeners = [];
   function favKey(x) { return x.join('|'); }
   function user() { var u = Auth.current(); return u && u.mode === 'cloud' && u.verified ? u : null; }
-  function local(u) { return { favs: store.get('favs.' + u.key, []), tickets: store.get('tickets.' + u.key, []), gone: store.get('gone.' + u.key, {}) }; }
+  /* the profile photo (a small 256 px picture) travels as {d: picture or null, at: when it was last changed} */
+  function photoOf(u) { var p = store.get('profile.' + u.key, {}); return p.photo || p.photoAt ? { d: p.photo || null, at: p.photoAt || 1 } : null; }
+  function local(u) { return { favs: store.get('favs.' + u.key, []), tickets: store.get('tickets.' + u.key, []), gone: store.get('gone.' + u.key, {}), photo: photoOf(u) }; }
   function merge(a, b) {
     var gone = {}, k;
     for (k in a.gone) gone[k] = a.gone[k];
@@ -24,7 +26,10 @@ window.Sync = (function () {
     tickets.sort(function (x, y) { return y.at - x.at; });
     var keys = Object.keys(gone).sort(function (x, y) { return gone[y] - gone[x]; }).slice(0, 200), g2 = {};
     keys.forEach(function (x) { g2[x] = gone[x]; });
-    return { favs: favs.slice(0, 30), tickets: tickets.slice(0, 50), gone: g2 };
+    var pa = a.photo, pb = b.photo && typeof b.photo.at === 'number' ? b.photo : null, photo = pa && pb ? (pb.at > pa.at ? pb : pa) : (pa || pb || null);
+    var out = { favs: favs.slice(0, 30), tickets: tickets.slice(0, 50), gone: g2 };
+    if (photo) out.photo = photo;
+    return out;
   }
   function state(s) { store.set('syncState', s); listeners.forEach(function (f) { try { f(s); } catch (e) {} }); }
   function run() {
@@ -41,8 +46,10 @@ window.Sync = (function () {
       }).then(function (remote) {
         var before = local(u), m = merge(before, remote);
         store.set('favs.' + u.key, m.favs); store.set('tickets.' + u.key, m.tickets); store.set('gone.' + u.key, m.gone);
-        var changedLocal = JSON.stringify([before.favs, before.tickets]) !== JSON.stringify([m.favs, m.tickets]);
-        var same = JSON.stringify([remote.favs || [], remote.tickets || [], remote.gone || {}]) === JSON.stringify([m.favs, m.tickets, m.gone]);
+        var photoChanged = JSON.stringify(before.photo || null) !== JSON.stringify(m.photo || null);
+        if (photoChanged && m.photo) { var pr = store.get('profile.' + u.key, {}); if (m.photo.d) pr.photo = m.photo.d; else delete pr.photo; pr.photoAt = m.photo.at; store.set('profile.' + u.key, pr); }
+        var changedLocal = photoChanged || JSON.stringify([before.favs, before.tickets]) !== JSON.stringify([m.favs, m.tickets]);
+        var same = JSON.stringify([remote.favs || [], remote.tickets || [], remote.gone || {}, remote.photo || null]) === JSON.stringify([m.favs, m.tickets, m.gone, m.photo || null]);
         var done = function () { state({ ok: true, at: Date.now() }); return changedLocal; };
         if (same) return done();
         return fetch(url + '?updateMask.fieldPaths=data&updateMask.fieldPaths=updatedAt', { method: 'PATCH', headers: H,

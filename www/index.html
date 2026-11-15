@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<meta name="theme-color" content="#1E4FA3">
+<meta name="theme-color" content="#171A21">
 <meta name="color-scheme" content="light dark">
 <title>MetroYatri – Metro Guide</title>
 <link rel="icon" href="data:,">
@@ -12,9 +12,12 @@
 </head>
 <body>
 <div id="splash" aria-hidden="true">
-  <svg class="mark" viewBox="0 0 120 120"><circle class="ring" cx="60" cy="60" r="47" fill="none" stroke="#1E4FA3" stroke-width="12" stroke-linecap="round" pathLength="100"/><path class="m" d="M34 84V36h14l12 21 12-21h14v48H73V58L60 80 47 58v26z" fill="#E5322D"/></svg>
+  <svg class="mark" viewBox="0 0 120 120">
+    <path id="sp-m" class="line" d="M27 91V34l33 36 33-36v57" fill="none" stroke="#FFB300" stroke-width="10.5" stroke-linecap="round" stroke-linejoin="round" pathLength="100"/>
+    <g class="stops" fill="#171A21" stroke="#fff" stroke-width="4.5"><circle cx="27" cy="91" r="7.5"/><circle cx="27" cy="34" r="7.5"/><circle cx="60" cy="70" r="7.5"/><circle cx="93" cy="34" r="7.5"/><circle cx="93" cy="91" r="7.5"/></g>
+    <circle class="train" r="4.5" fill="#fff"><animateMotion dur="1.6s" begin="0s" repeatCount="indefinite" keyPoints="0;1;0" keyTimes="0;0.5;1" calcMode="linear"><mpath href="#sp-m"/></animateMotion></circle>
+  </svg>
   <b><i>M</i><i>e</i><i>t</i><i>r</i><i>o</i><i>Y</i><i>a</i><i>t</i><i>r</i><i>i</i></b>
-  <div class="dots"><i></i><i></i><i></i></div>
 </div>
 <div id="app">
   <main id="view" tabindex="-1"></main>

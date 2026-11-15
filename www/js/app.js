@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   var CFG = window.APP_CONFIG, CITIES = window.CITIES, NET = window.NET, Auth = window.Auth;
-  var T = window.T, I18N = window.I18N, Native = window.Native, Sync = window.Sync, VERSION = '2.4';
+  var T = window.T, I18N = window.I18N, Native = window.Native, Sync = window.Sync, VERSION = '2.5';
   var $view = document.getElementById('view'), $sheet = document.getElementById('sheet'), $toast = document.getElementById('toast');
   var store = {
     get: function (k, d) { try { var v = localStorage.getItem('my.' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -402,7 +402,7 @@
         lines(str, maxW || W - P - x).forEach(function (ln) { if (!measure) ctx.fillText(ln, x, y); y += Math.round(size * (lh || 1.3)); });
       }
       function rr(x, yy, w, h, rad, color) { if (measure) return; ctx.fillStyle = color; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, yy, w, h, rad) : ctx.rect(x, yy, w, h); ctx.fill(); }
-      if (!measure) { ctx.fillStyle = '#EEF1F5'; ctx.fillRect(0, 0, W, ctx.canvas.height); ctx.fillStyle = '#1E4FA3'; ctx.fillRect(0, 0, W, 190); }
+      if (!measure) { ctx.fillStyle = '#EEF1F5'; ctx.fillRect(0, 0, W, ctx.canvas.height); ctx.fillStyle = '#171A21'; ctx.fillRect(0, 0, W, 190); ctx.fillStyle = '#FFB300'; ctx.fillRect(0, 184, W, 6); }
       y = 46; text('MetroYatri', P, 58, 700, '#fff'); y += 2; text(T(C.system), P, 32, 400, 'rgba(255,255,255,.9)');
       y = 236; text(T('From'), P, 30, 500, '#596170'); text(sn(r.from), P, 56, 700, '#171A21', 0, 1.2);
       y += 14; text(T('To'), P, 30, 500, '#596170'); text(sn(r.to), P, 56, 700, '#171A21', 0, 1.2);
@@ -786,7 +786,7 @@
       '<form id="nameform" novalidate><label class="field"><span>' + T('Your name') + '</span><input name="name" maxlength="40" value="' + esc(u.name) + '" autocomplete="name"></label>' +
       '<p class="err" id="nameerr"></p><button class="btn" type="submit">' + T('Save name') + '</button></form>' +
       '<div class="card" style="margin-top:16px"><div class="kv"><span>' + T(u.email.indexOf('@') > 0 ? 'Email' : 'Mobile') + '</span><b>' + esc(u.email) + '</b></div><div class="kv"><span>' + T('Account') + '</span><b>' + T(accountTag(u)) + '</b></div></div>' +
-      '<p class="hint" style="margin-top:10px">' + T('Your photo stays on this phone. It is not uploaded anywhere.') + '</p>';
+      '<p class="hint" style="margin-top:10px">' + T(Sync.active() ? 'Your photo is saved with your account, so it shows on every phone where you log in.' : 'Your photo stays on this phone. Verify an email account to see it on your other phones.') + '</p>';
     document.getElementById('photo').addEventListener('change', function (e) {
       var f = e.target.files && e.target.files[0]; if (!f) return;
       var rd = new FileReader();
@@ -796,7 +796,7 @@
           var n = 256, c = document.createElement('canvas'), s = Math.min(img.width, img.height);
           c.width = c.height = n;
           c.getContext('2d').drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, n, n);
-          Auth.setPhoto(c.toDataURL('image/jpeg', 0.85)); toast(T('Profile photo updated')); rerender();
+          Auth.setPhoto(c.toDataURL('image/jpeg', 0.82)); Sync.soon(); toast(T('Profile photo updated')); rerender();
         };
         img.onerror = function () { toast(T('That file is not a picture this phone can read.')); };
         img.src = rd.result;
@@ -916,12 +916,12 @@
   var PRIVACY = [
     ['In short', 'MetroYatri has no adverts and no tracking, and nothing about you is sold or shared for marketing. It keeps only what it needs to work: your account, your saved routes and your practice bookings.'],
     ['Your account', 'When you create an account the app stores your name, your email address and a password. Accounts are handled by Firebase Authentication, a Google service. The password is kept by Google in a protected form and the developer cannot see it. Your email is used only to log you in, to send the verification link and to reset your password.'],
-    ['Saved routes and bookings', 'If your email is verified, your saved routes and practice bookings are also kept in Google Cloud Firestore under your own account, so they appear on any phone where you log in. Only you can read them. Practice bookings contain the stations, the time, the number of passengers and the fare. No payment details are ever collected, because no money is taken in this app.'],
+    ['Saved routes, bookings and photo', 'If your email is verified, your saved routes, practice bookings and profile photo are also kept in Google Cloud Firestore under your own account, so they appear on any phone where you log in. Only you can read them. Practice bookings contain the stations, the time, the number of passengers and the fare. No payment details are ever collected, because no money is taken in this app.'],
     ['Your location', 'The app asks for your location only when you tap Nearest station or the locate button on the map. Your position is used on the phone to find the closest stations and to show a dot on the map. It is not stored and it is not sent to the developer or to any server.'],
     ['Address search and street map', 'When you search for an address or landmark, the words you type are sent to the OpenStreetMap Nominatim search service to find the place. The street map pictures are downloaded from OpenStreetMap. Like any website, these services can see your internet address when the app contacts them. They are not told who you are.'],
     ['Notifications', 'Arrival alerts and reminders are created on your phone. The app does not use a push notification server and does not collect a notification ID for your phone.'],
-    ['What stays only on your phone', 'Your profile photo, the city and language you chose, recent searches, the dark mode setting and reminder settings stay on the phone and are removed when you uninstall the app.'],
-    ['Deleting your data', 'Open Account and tap Delete my account. This removes your account from Firebase and deletes your saved routes and bookings from Firestore. You can also ask for deletion through the contact below.'],
+    ['What stays only on your phone', 'The city and language you chose, recent searches, the dark mode setting and reminder settings stay on the phone and are removed when you uninstall the app. Without a verified email account, your profile photo also stays only on the phone.'],
+    ['Deleting your data', 'Open Account and tap Delete my account. This removes your account from Firebase and deletes your saved routes, bookings and profile photo from Firestore. You can also ask for deletion through the contact below.'],
     ['Children', 'The app is a travel guide for general use and is not aimed at children under 13. It does not knowingly collect information from them.'],
     ['Changes', 'If this policy changes, the new version is shown here and in the app listing, with a new date.']
   ];
@@ -1159,7 +1159,7 @@
     'verify-resend': function () { Auth.resend().then(function () { toast(T('Email sent again')); }, function (m) { document.getElementById('verr').textContent = T(String(m)); }); },
     'photo-zoom': function () { openPhoto(); },
     'photo-close': function () { closePhoto(); },
-    'photo-remove': function () { Auth.setPhoto(null); toast(T('Photo removed')); rerender(); }
+    'photo-remove': function () { Auth.setPhoto(null); Sync.soon(); toast(T('Photo removed')); rerender(); }
   };
   /* Touch feedback: a ripple spreads from the finger, and the action follows a moment later so the press is seen. */
   var TAP = '.btn,.item,.chip,.qtile,.linecard,.placecard,.netcard,.citybtn,.planner .row,.jst,.jbar,#tabs a,.seg button,.back,.card.profile,[data-pick]', TAP_MS = 140, tapBusy = false;
@@ -1222,7 +1222,7 @@
   tabsText(); route(true); jWatch();
   // saved routes and bookings follow the account
   Sync.onChange(function () { if (page() === 'more' && $sheet.hidden) rerender(); });
-  Sync.now().then(function (changed) { if (changed && $sheet.hidden && (page() === 'plan' && !state.route || page() === 'tickets' || page() === 'saved')) rerender(); });
+  Sync.now().then(function (changed) { if (changed && $sheet.hidden && (page() === 'plan' && !state.route || page() === 'tickets' || page() === 'saved' || page() === 'more' || page() === 'profile')) rerender(); });
   document.addEventListener('visibilitychange', function () { if (!document.hidden) { jTick(); Sync.soon(); } });
   // opening screen: stays for about 2 seconds, then fades into the app
   var splash = document.getElementById('splash');
@@ -1230,6 +1230,6 @@
   if (splash) setTimeout(function () {
     splash.classList.add('out'); $view.classList.add('enter-tab');
     setTimeout(function () { splash.remove(); $view.classList.remove('enter-tab'); setTimeout(firstAsk, 700); }, 420);
-  }, 2100);
+  }, 2300);
   else setTimeout(firstAsk, 700);
 })();
